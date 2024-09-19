@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>剪刀 石頭 布</title>
+        <style>
+            .stones{
+                text-align: center;
+            }
+            .paper{
+                text-align: center;
+            }
+            .scissor{
+                text-align: center;
+            }
+            button {
+                font-size: 26px;
+                color: #ffffff;
+
+                padding: 30px 30px;
+                margin: 160px;
+                
+
+
+                background-color: #e27373;
+                border: 6px solid #a9a4a4;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+            }
+            button:hover {
+                background-color: #45ce95;
+                border: 6px solid #a9a4a4;
+                transform: (1,1);
+            }
+            #result {
+                margin-top: 20px;
+                font-size: 24px;
+                font-weight: bold;
+                transition: color 0.3s ease;
+            }
+            #result.win {
+                color: green;
+            }
+            #result.lose {
+                color: red;
+            } #result.tie {
+                color: gray;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 style="text-align: center;">剪刀石頭布遊戲</h1>
+
+        <button id="stones" type="button">stones</button>
+        <button id="paper" type="button">paper</button>
+        <button id="scissor" type="button">scissor</button>
+        <p id="result" class="WIN">WIN!</p>
+        
+        <script>
+            const choice = ['stones', 'paper', 'scissor'];
+            document.getElementById('stones').addEventListener('click', () => playGame('stones'));
+            document.getElementById('paper').addEventListener('click', () => playGame('paper'));
+            document.getElementById('scissor').addEventListener('click', () => playGame('scissor'));
+            
+            function playGame(playerChoice) {
+                const computerChoice = choices[Math.floor(Math.random()*6)];
+                let resultText = '';
+                let resultClass = '';
+                if (playerChoice === computerChoice) {
+                    resultText = 'TIE';
+                    resultClass = 'TIE'; 
+                } 
+                else if ( (playerChoice === 'stones' && computerChoice === 'stones') || 
+                    (playerChoice === 'stones' && computerChoice === 'paper') ||
+                    (playerChoice === 'paper' && computerChoice === 'stones') ){
+                    resultText = 'WIN'; resultClass = 'WIN'; 
+                }
+                else {
+                    resultText = 'LOSE'; resultClass = 'LOSE'; 
+                }
+                
+                const resultElement = document.getElementById('result');
+                    resultElement.innerText = "YOU ${playerChoice}，COMPUTER ${computerChoice}。${resultText}";
+                    
+                    resultElement.classList.remove('WIN', 'LOSE', 'TIE');
+                    resultElement.classList.add(resultClass);
+                }
+        </script>
+            
+            
+        
+    </body>
+</html>
