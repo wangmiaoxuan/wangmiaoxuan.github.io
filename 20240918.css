@@ -1,0 +1,10 @@
+*{
+    font-size:30px;
+    font-family:Microsoft JhengHei;
+  }
+  
+  #result{
+    background:lightblue;
+    padding:10px;
+    border-radius:20px;
+  }
