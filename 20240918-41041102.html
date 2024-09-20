@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>剪刀 石頭 布</title>        
+    </head>
+    <body>
+        <link rel="stylesheet" href="20240918o.css" />
+        <!--連接css-->
+        <h1 style="text-align: center;">剪刀石頭布遊戲</h1>
+
+        <center>
+            <button id="stones">石頭</button>
+            <button id="paper">布</button>
+            <button id="scissor">剪刀</button>
+        </center>
+        
+        <p id="result">...</p>
+        
+        <script>
+            const choose = ['stones', 'paper', 'scissor'];
+            document.getElementById('stones').addEventListener('click', () => go('stones'));
+            document.getElementById('paper').addEventListener('click', () => go('paper'));
+            document.getElementById('scissor').addEventListener('click', () => go('scissor'));
+            
+            function go(youchoose){
+                const computerchoose = choose[Math.floor(Math.random()*3)];
+                let resultprint = '';
+                let A = '';
+
+                if(youchoose == computerchoose) {
+                    resultprint = 'TIE';
+                    A = 'tie';
+                }else if( (youchoose == 'stones' && computerchoose == 'scissor') || (youchoose == 'scissor' && computerchoose == 'paper') || (youchoose == 'paper' && computerchoose == 'stones') ) {
+                    resultprint = 'WIN';
+                    A = 'win';
+                }else{
+                    resultprint = 'LOSE';
+                    A = 'lose';
+                }
+
+                result.innerText = `You：${youchoose}，Computer：${computerchoose}。Result：${resultprint}`; //sub
+                result.classList.remove('win','lose','tie'); //del
+                result.classList.add(A); //add
+            
+            }
+        </script>
+    </body>
+</html>
