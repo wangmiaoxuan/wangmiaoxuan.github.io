@@ -14,23 +14,22 @@
             .scissor{
                 text-align: center;
             }
+
             button {
                 font-size: 26px;
                 color: #ffffff;
 
                 padding: 30px 30px;
                 margin: 160px;
-                
 
-
-                background-color: #e27373;
+                background-color: #479dda;
                 border: 6px solid #a9a4a4;
-                transition: background-color 0.3s ease, transform 0.3s ease;
+                transition: background-color 1s ease, transform 0.5s ease;
             }
             button:hover {
-                background-color: #45ce95;
+                background-color: #264c96;
                 border: 6px solid #a9a4a4;
-                transform: (1,1);
+                transform: scale(1.6,1.6);
             }
             #result {
                 margin-top: 20px;
@@ -43,7 +42,8 @@
             }
             #result.lose {
                 color: red;
-            } #result.tie {
+            }
+            #result.tie {
                 color: gray;
             }
         </style>
@@ -66,13 +66,13 @@
                 const computerChoice = choices[Math.floor(Math.random()*6)];
                 let resultText = '';
                 let resultClass = '';
-                if (playerChoice === computerChoice) {
+                if (playerChoice == computerChoice) {
                     resultText = 'TIE';
                     resultClass = 'TIE'; 
                 } 
-                else if ( (playerChoice === 'stones' && computerChoice === 'stones') || 
-                    (playerChoice === 'stones' && computerChoice === 'paper') ||
-                    (playerChoice === 'paper' && computerChoice === 'stones') ){
+                else if ( (playerChoice == 'stones' && computerChoice == 'stones') || 
+                    (playerChoice == 'stones' && computerChoice == 'paper') ||
+                    (playerChoice == 'paper' && computerChoice == 'stones') ){
                     resultText = 'WIN'; resultClass = 'WIN'; 
                 }
                 else {
@@ -81,13 +81,9 @@
                 
                 const resultElement = document.getElementById('result');
                     resultElement.innerText = "YOU ${playerChoice}，COMPUTER ${computerChoice}。${resultText}";
-                    
                     resultElement.classList.remove('WIN', 'LOSE', 'TIE');
                     resultElement.classList.add(resultClass);
                 }
         </script>
-            
-            
-        
     </body>
 </html>
