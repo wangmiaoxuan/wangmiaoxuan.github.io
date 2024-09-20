@@ -27,22 +27,22 @@
             function go(youchoose){
                 const computerchoose = choose[Math.floor(Math.random()*3)];
                 let resultprint = '';
-                let resultClass = '';
+                let A = '';
 
                 if(youchoose == computerchoose) {
                     resultprint = 'TIE';
-                    resultClass = 'tie'; 
+                    A = 'tie';
                 }else if( (youchoose == 'stones' && computerchoose == 'scissor') || (youchoose == 'scissor' && computerchoose == 'paper') || (youchoose == 'paper' && computerchoose == 'stones') ) {
                     resultprint = 'WIN';
-                    resultClass = 'win'; 
+                    A = 'win';
                 }else{
                     resultprint = 'LOSE';
-                    resultClass = 'lose'; 
+                    A = 'lose';
                 }
 
                 result.innerText = `You：${youchoose}，Computer：${computerchoose}。Result：${resultprint}`; //sub
                 result.classList.remove('win','lose','tie'); //del
-                result.classList.add(resultClass); //add
+                result.classList.add(A); //add
             
             }
         </script>
