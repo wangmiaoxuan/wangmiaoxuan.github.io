@@ -3,11 +3,49 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>剪刀 石頭 布</title>        
+        <title>剪刀 石頭 布</title>
+        <style>
+            .stones{
+                text-align: center;               
+            }
+            .paper{
+                text-align: center;
+            }
+            .scissor{
+                text-align: center;
+            }
+
+            button {
+                font-size: 36px;
+                color: #ffffff;
+                padding: 60px 60px;
+                margin: 100px 100px;
+                background-color: #479dda;
+                border: 6px solid #a9a4a4;
+            }
+            button:hover{
+                background-color: #4b55ac;
+                border: 5px solid #a9a4a4;
+                transform: scale(1.2,1.2);
+            }
+
+            #result{
+                text-align: center;
+                font-size: 50px;
+                font-weight: bold;
+            }
+            #result.win{
+                color: rgb(60, 160, 60);
+            }
+            #result.lose{
+                color: rgb(196, 66, 66);
+            }
+            #result.tie{
+                color: rgb(167, 79, 201);
+            }
+        </style>    
     </head>
     <body>
-        <link rel="stylesheet" href="20240918o.css" />
-        <!--連接css-->
         <h1 style="text-align: center;">剪刀石頭布遊戲</h1>
 
         <center>
