@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記憶大考驗</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #e3f2fd; /* 淺藍色背景 */
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #1565c0; /* 深藍色標題 */
+        }
+
+        #countdown {
+            font-size: 48px;
+            color: #0d47a1; /* 藍色倒數 */
+            margin: 20px 0;
+            visibility: hidden;
+        }
+
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(8, 120px);
+            grid-template-rows: repeat(2, 160px);
+            gap: 30px; /* 增加卡片間距 */
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .card {
+            width: 120px;
+            height: 160px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            border: 5px solid #1e88e5; /* 卡片邊框的藍色 */
+            border-radius: 10px;
+            background-color: #90caf9; /* 卡片的藍色背景 */
+        }
+
+        .flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card img {
+            width: 100px;
+            height: 140px;
+            backface-visibility: hidden;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+
+        .back {
+            transform: rotateY(0deg);
+        }
+
+        .front {
+            transform: rotateY(180deg);
+        }
+
+        #buttons {
+            margin-top: 20px;
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .modal {
+            display: none; /* 初始隱藏 */
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 235, 59, 0.9); /* 半透明黃色背景 */
+            padding: 40px;
+            border-radius: 20px;
+            color: #000; /* 黑色字體 */
+            text-align: center;
+            width: 300px;
+            z-index: 1000; /* 確保在最上面 */
+        }
+
+        #closeBtn {
+            background-color: transparent;
+            border: none;
+            color: #f44336; /* 紅色叉叉 */
+            font-size: 24px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        #congratsMessage {
+            font-size: 24px; /* 大字體 */
+            margin-bottom: 10px;
+        }
+
+        #timeMessage {
+            font-size: 18px; /* 時間的字體 */
+        }
+
+        #cardSet {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>配對遊戲</h1>
+    
+    <select id="cardSet">
+        <option value="angry">Angry</option>
+        <option value="happy">Happy</option>
+    </select>
+    
+    <div id="countdown">10</div>
+    <div id="gameBoard"></div>
+
+    <div id="buttons">
+        <button id="startBtn">開始遊戲</button>
+        <button id="resetBtn">重新開始</button>
+    </div>
+
+    <div id="congratsModal" class="modal">
+        <button id="closeBtn">&times;</button>
+        <p id="congratsMessage">你成功了！</p>
+        <p id="timeMessage"></p>
+    </div>
+
+    <script>
+        const angryImages = [
+            'images/01.png', 'images/02.png', 'images/03.png', 'images/04.png', 
+            'images/05.png', 'images/06.png', 'images/07.png', 'images/08.png',
+            'images/01.png', 'images/02.png', 'images/03.png', 'images/04.png', 
+            'images/05.png', 'images/06.png', 'images/07.png', 'images/08.png'
+        ];
+
+        const happyImages = [
+            'images/A.png', 'images/B.png', 'images/C.png', 'images/D.png', 
+            'images/E.png', 'images/F.png', 'images/G.png', 'images/H.png',
+            'images/A.png', 'images/B.png', 'images/C.png', 'images/D.png', 
+            'images/E.png', 'images/F.png', 'images/G.png', 'images/H.png'
+        ];
+
+        let selectedImages = angryImages;
+        let flippedCards = [], matchedPairs = 0, gameStarted = false, countdownTimer, gameInProgress = false;
+        let startTime, endTime;
+
+        const gameBoard = document.getElementById('gameBoard');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const countdown = document.getElementById('countdown');
+        const congratsModal = document.getElementById('congratsModal');
+        const closeBtn = document.getElementById('closeBtn');
+        const timeMessage = document.getElementById('timeMessage');
+        const cardSetSelect = document.getElementById('cardSet');
+
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+        closeBtn.addEventListener('click', closeModal);
+        cardSetSelect.addEventListener('change', changeCardSet);
+
+        function createBoard() {
+            const shuffledImages = shuffle(selectedImages);
+            gameBoard.innerHTML = '';
+            shuffledImages.forEach(img => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.image = img;
+                card.innerHTML = `
+                    <img src="images/00.png" class="back" alt="背面">
+                    <img src="${img}" class="front" alt="正面">`;
+                gameBoard.appendChild(card);
+            });
+            document.querySelectorAll('.card').forEach(card => card.addEventListener('click', flipCard));
+        }
+
+        function changeCardSet() {
+            const selectedSet = cardSetSelect.value;
+            selectedImages = selectedSet === 'angry' ? angryImages : happyImages;
+            resetGame(); // 切換牌組時重置遊戲
+        }
+
+        function startGame() {
+            if (gameInProgress) return;
+            gameInProgress = true;
+            matchedPairs = 0; // 重置匹配對數
+            countdown.style.visibility = 'visible';
+            let count = 10;
+
+            createBoard(); // 先建立遊戲板
+            document.querySelectorAll('.card').forEach(card => card.classList.add('flipped'));
+
+            countdownTimer = setInterval(() => {
+                countdown.textContent = count--;
+                if (count < 0) {
+                    clearInterval(countdownTimer);
+                    countdown.style.visibility = 'hidden';
+                    flipAllCardsBack(); // 倒數結束，翻回背面
+                    gameStarted = true; // 遊戲正式開始
+                    startTime = Date.now(); // 記錄開始時間
+                }
+            }, 1000);
+        }
+
+        function flipCard() {
+            if (!gameStarted || this.classList.contains('flipped')) return;
+            this.classList.add('flipped');
+            flippedCards.push(this);
+            if (flippedCards.length === 2) checkMatch();
+        }
+
+        function flipAllCardsBack() {
+            document.querySelectorAll('.card').forEach(card => {
+                if (card.classList.contains('flipped')) {
+                    card.classList.remove('flipped');
+                }
+            });
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.dataset.image === card2.dataset.image) {
+                matchedPairs++;
+                flippedCards = [];
+                if (matchedPairs === selectedImages.length / 2) endGame();
+            } else {
+                setTimeout(() => {
+                    // 如果不匹配，翻回去
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                }, 1000); // 延遲一秒翻回去
+            }
+        }
+
+        function endGame() {
+            gameInProgress = false;
+            endTime = Date.now();
+            const timeTaken = Math.floor((endTime - startTime) / 1000); // 計算時間
+            timeMessage.textContent = `你花了 ${timeTaken} 秒完成遊戲！`;
+            congratsModal.style.display = 'block';
+        }
+
+        function closeModal() {
+            congratsModal.style.display = 'none';
+        }
+
+        function resetGame() {
+            clearInterval(countdownTimer);
+            matchedPairs = 0;
+            flippedCards = [];
+            gameStarted = false;
+            gameInProgress = false;
+            countdown.style.visibility = 'hidden';
+            countdown.textContent = '10';
+            createBoard(); // 重新建立遊戲板
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
