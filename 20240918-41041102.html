@@ -1,88 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>剪刀 石頭 布</title>
-        <style>
-            .stones{
-                text-align: center;               
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stone Paper Scissor Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .buttons {
+            display: flex;
+            gap: 40px; /* 增大間距 */
+            margin: 40px; /* 增大外邊距 */
+        }
+        .button {
+            width: 150px; /* 增大按鈕寬度 */
+            height: 150px; /* 增大按鈕高度 */
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            transform: scale(1.2); /* 增大放大比例 */
+        }
+        .result {
+            margin-top: 30px;
+            font-size: 30px; /* 增大文字大小 */
+        }
+        .win {
+            color: green;
+        }
+        .lose {
+            color: red;
+        }
+        .draw {
+            color: gray;
+        }
+        h1 {
+            font-size: 48px; /* 增大標題大小 */
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Stone Paper Scissor Game</h1>
+    <div class="buttons">
+        <img src="images/stone.png" alt="Stone" class="button" onclick="playerChoice('stone')">
+        <img src="images/paper.png" alt="Paper" class="button" onclick="playerChoice('paper')">
+        <img src="images/scissor.png" alt="Scissor" class="button" onclick="playerChoice('scissor')">
+    </div>
+    <div class="result" id="result"></div>
+
+    <!-- Audio files -->
+    <audio id="audio-stone" src="images/stone.mp3"></audio>
+    <audio id="audio-paper" src="images/paper.mp3"></audio>
+    <audio id="audio-scissor" src="images/scissor.mp3"></audio>
+    <audio id="audio-win" src="sounds/win.mp3"></audio>
+    <audio id="audio-lose" src="sounds/lose.mp3"></audio>
+    <audio id="audio-tie" src="sounds/tie.mp3"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let playerWins = 0;
+        let computerWins = 0;
+
+        function computerChoice() {
+            const choices = ['stone', 'paper', 'scissor'];
+            const randomIndex = Math.floor(Math.random() * choices.length);
+            return choices[randomIndex];
+        }
+
+        function determineWinner(player, computer) {
+            if (player === computer) {
+                return 'draw';
+            } else if (
+                (player === 'stone' && computer === 'scissor') ||
+                (player === 'scissor' && computer === 'paper') ||
+                (player === 'paper' && computer === 'stone')
+            ) {
+                return 'win';
+            } else {
+                return 'lose';
             }
-            .paper{
-                text-align: center;
+        }
+
+        function playAudio(choice) {
+            const audioId = `audio-${choice}`;
+            const audioElement = document.getElementById(audioId);
+            if (audioElement) {
+                audioElement.currentTime = 0; // 重置音檔時間
+                audioElement.play();
             }
-            .scissor{
-                text-align: center;
+        }
+
+        function playResultAudio(result) {
+            let audioId;
+            if (result === 'win') {
+                audioId = 'audio-win';
+            } else if (result === 'lose') {
+                audioId = 'audio-lose';
+            } else {
+                audioId = 'audio-tie';
+            }
+            const audioElement = document.getElementById(audioId);
+            if (audioElement) {
+                audioElement.currentTime = 0;
+                audioElement.play();
+            }
+        }
+
+        function resetGame() {
+            playerWins = 0;
+            computerWins = 0;
+            document.getElementById('result').textContent = '';
+        }
+
+        function checkGameEnd() {
+            if (playerWins === 2 || computerWins === 2) {
+                const winner = playerWins === 2 ? 'Player' : 'Computer';
+                Swal.fire({
+                    title: `${winner} wins the game!`,
+                    text: "Do you want to play again or exit?",
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonText: 'Play Again',
+                    cancelButtonText: 'Exit'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        resetGame();
+                    } else {
+                        Swal.fire('Game Over', 'Thank you for playing!', 'info');
+                    }
+                });
+            }
+        }
+
+        function playerChoice(choice) {
+            playAudio(choice);
+            const computer = computerChoice();
+            const result = determineWinner(choice, computer);
+
+            const resultDiv = document.getElementById('result');
+            if (result === 'win') {
+                playerWins++;
+                playResultAudio('win');
+                Swal.fire('You Win!', `You chose ${choice} and computer chose ${computer}.`, 'success');
+            } else if (result === 'lose') {
+                computerWins++;
+                playResultAudio('lose');
+                Swal.fire('You Lose!', `You chose ${choice} and computer chose ${computer}.`, 'error');
+            } else {
+                playResultAudio('tie');
+                Swal.fire('It\'s a Draw!', `You both chose ${choice}.`, 'info');
             }
 
-            button {
-                font-size: 36px;
-                color: #ffffff;
-                padding: 60px 60px;
-                margin: 100px 100px;
-                background-color: #479dda;
-                border: 6px solid #a9a4a4;
-            }
-            button:hover{
-                background-color: #4b55ac;
-                border: 5px solid #a9a4a4;
-                transform: scale(1.2,1.2);
-            }
-
-            #result{
-                text-align: center;
-                font-size: 50px;
-                font-weight: bold;
-            }
-            #result.win{
-                color: rgb(60, 160, 60);
-            }
-            #result.lose{
-                color: rgb(196, 66, 66);
-            }
-            #result.tie{
-                color: rgb(167, 79, 201);
-            }
-        </style>    
-    </head>
-    <body>
-        <h1 style="text-align: center;">剪刀石頭布遊戲</h1>
-
-        <center>
-            <button id="stones">石頭</button>
-            <button id="paper">布</button>
-            <button id="scissor">剪刀</button>
-        </center>
-        
-        <p id="result">...</p>
-        
-        <script>
-            const choose = ['stones', 'paper', 'scissor'];
-            document.getElementById('stones').addEventListener('click', () => go('stones'));
-            document.getElementById('paper').addEventListener('click', () => go('paper'));
-            document.getElementById('scissor').addEventListener('click', () => go('scissor'));
-            
-            function go(youchoose){
-                const computerchoose = choose[Math.floor(Math.random()*3)];
-                let resultprint = '';
-                let A = '';
-
-                if(youchoose == computerchoose) {
-                    resultprint = 'TIE';
-                    A = 'tie';
-                }else if( (youchoose == 'stones' && computerchoose == 'scissor') || (youchoose == 'scissor' && computerchoose == 'paper') || (youchoose == 'paper' && computerchoose == 'stones') ) {
-                    resultprint = 'WIN';
-                    A = 'win';
-                }else{
-                    resultprint = 'LOSE';
-                    A = 'lose';
-                }
-
-                result.innerText = `You：${youchoose}，Computer：${computerchoose}。Result：${resultprint}`; //sub
-                result.classList.remove('win','lose','tie'); //del
-                result.classList.add(A); //add
-            
-            }
-        </script>
-    </body>
+            resultDiv.textContent = `Player: ${playerWins}, Computer: ${computerWins}`;
+            checkGameEnd();
+        }
+    </script>
+</body>
 </html>
