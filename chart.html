@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart 圖表</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        canvas {
+            max-width: 1200px;
+            margin: auto;
+            height: 1600px;
+        }
+        #button-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar 位置 -->
+    <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="20241030-41041102.html">回首頁</a>
+        </div>
+    </nav>
+    <br>
+    <h1 class="text-center">Chart 圖表效果示範</h1>
+    <p><a href="https://www.chartjs.org/docs/latest/samples/scales/time-combo.html" target="_blank" style="margin: 36px;">Chart 圖表</a></p>
+
+
+    <h2 style="margin: 36px;">範例程式碼</h2>
+    <pre>
+        <h6>
+            &lt;canvas id=&quot;myChart&quot;&gt;&lt;/canvas&gt;
+            &lt;div id=&quot;button-container&quot;&gt;
+                &lt;button id=&quot;randomize-button&quot;&gt;Randomize&lt;/button&gt;
+            &lt;/div&gt;
+
+            &lt;script&gt;
+            // Utils functions for generating random data
+            const Utils = {
+                CHART_COLORS: {
+                    red: 'rgb(255, 99, 132)',
+                    blue: 'rgb(54, 162, 235)',
+                    green: 'rgb(75, 192, 192)',
+                },
+                transparentize: function(color, opacity = 1) {
+                    const alpha = opacity === 1 ? '' : `, ${opacity}`;
+                    return color.replace('rgb', 'rgba').replace(')', alpha + ')');
+                },
+                numbers: function({count, min, max}) {
+                    return Array.from({length: count}, () => Math.floor(Math.random() * (max - min + 1)) + min);
+                },
+                newDate: function(days) {
+                    const date = new Date();
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
+            };
+            const DATA_COUNT = 7;
+            const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+            const labels = [];
+            for (let i = 0; i &lt; DATA_COUNT; ++i) {
+                labels.push(Utils.newDate(i));
+            }
+            const data = {
+                labels: labels,
+                datasets: [{
+                    type: 'bar',
+                    label: 'Dataset 1',
+                    backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
+                    borderColor: Utils.CHART_COLORS.red,
+                    data: Utils.numbers(NUMBER_CFG),
+                }, {
+                    type: 'bar',
+                    label: 'Dataset 2',
+                    backgroundColor: Utils.transparentize(Utils.CHART_COLORS.blue, 0.5),
+                    borderColor: Utils.CHART_COLORS.blue,
+                    data: Utils.numbers(NUMBER_CFG),
+                }, {
+                    type: 'line',
+                    label: 'Dataset 3',
+                    backgroundColor: Utils.transparentize(Utils.CHART_COLORS.green, 0.5),
+                    borderColor: Utils.CHART_COLORS.green,
+                    fill: false,
+                    data: Utils.numbers(NUMBER_CFG),
+                }]
+            };
+            const config = {
+                type: 'line',
+                data: data,
+                options: {
+                    plugins: {
+                        title: {
+                            text: 'Chart.js Combo Time Scale',
+                            display: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            display: true,
+                            offset: true,
+                            ticks: {
+                                source: 'data'
+                            },
+                            time: {
+                                unit: 'day'
+                            },
+                        },
+                    },
+                },
+            };
+            const myChart = new Chart(
+                document.getElementById('myChart'),
+                config
+            );
+            document.getElementById('randomize-button').addEventListener('click', () => {
+                myChart.data.datasets.forEach(dataset => {
+                    dataset.data = Utils.numbers({count: myChart.data.labels.length, min: 0, max: 100});
+                });
+                myChart.update();
+            });
+            &lt;/script&gt;
+        </h6>
+    </pre>
+
+
+    <h2 style="margin: 36px;">範例展示效果</h2>
+    <canvas id="myChart"></canvas>
+    <div id="button-container">
+        <button id="randomize-button">Randomize</button>
+    </div>
+
+    <script>
+        // Utils functions for generating random data
+        const Utils = {
+            CHART_COLORS: {
+                red: 'rgb(255, 99, 132)',
+                blue: 'rgb(54, 162, 235)',
+                green: 'rgb(75, 192, 192)',
+            },
+            transparentize: function(color, opacity = 1) {
+                const alpha = opacity === 1 ? '' : `, ${opacity}`;
+                return color.replace('rgb', 'rgba').replace(')', alpha + ')');
+            },
+            numbers: function({count, min, max}) {
+                return Array.from({length: count}, () => Math.floor(Math.random() * (max - min + 1)) + min);
+            },
+            newDate: function(days) {
+                const date = new Date();
+                date.setDate(date.getDate() + days);
+                return date;
+            }
+        };
+
+        const DATA_COUNT = 7;
+        const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+
+        const labels = [];
+        for (let i = 0; i < DATA_COUNT; ++i) {
+            labels.push(Utils.newDate(i));
+        }
+
+        const data = {
+            labels: labels,
+            datasets: [{
+                type: 'bar',
+                label: 'Dataset 1',
+                backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
+                borderColor: Utils.CHART_COLORS.red,
+                data: Utils.numbers(NUMBER_CFG),
+            }, {
+                type: 'bar',
+                label: 'Dataset 2',
+                backgroundColor: Utils.transparentize(Utils.CHART_COLORS.blue, 0.5),
+                borderColor: Utils.CHART_COLORS.blue,
+                data: Utils.numbers(NUMBER_CFG),
+            }, {
+                type: 'line',
+                label: 'Dataset 3',
+                backgroundColor: Utils.transparentize(Utils.CHART_COLORS.green, 0.5),
+                borderColor: Utils.CHART_COLORS.green,
+                fill: false,
+                data: Utils.numbers(NUMBER_CFG),
+            }]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                plugins: {
+                    title: {
+                        text: 'Chart.js Combo Time Scale',
+                        display: true
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        display: true,
+                        offset: true,
+                        ticks: {
+                            source: 'data'
+                        },
+                        time: {
+                            unit: 'day'
+                        },
+                    },
+                },
+            },
+        };
+
+        const myChart = new Chart(
+            document.getElementById('myChart'),
+            config
+        );
+
+        document.getElementById('randomize-button').addEventListener('click', () => {
+            myChart.data.datasets.forEach(dataset => {
+                dataset.data = Utils.numbers({count: myChart.data.labels.length, min: 0, max: 100});
+            });
+            myChart.update();
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottie 動畫</title>
+    <style>
+        #animation-container {
+            width: 300px; /* 容器宽度 */
+            height: 300px; /* 容器高度 */
+            border: 2px solid #4a90e2; /* 边框颜色和样式 */
+            border-radius: 10px; /* 圆角 */
+            padding: 10px; /* 内边距 */
+            background-color: #fff; /* 背景色 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+            display: flex;
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            margin-left: 120px;
+        }
+
+        #lottie {
+            width: 100%; /* 使动画宽度填满容器 */
+            height: 100%; /* 使动画高度填满容器 */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.6/lottie.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <!-- Navbar 位置 -->
+    <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="20241030-41041102.html">回首頁</a>
+        </div>
+    </nav>
+    <br>
+    <h1 class="text-center">Lottie 動畫效果示範</h1>
+    <p><a href="https://lottiefiles.com/" target="_blank" style="margin: 36px;">lottiefiles 官網</a></p>
+    <p><a href="https://app.lottiefiles.com/animation/948fbfb1-00ae-4e03-8e67-c427f4be7024?channel=web&source=public-animation&panel=download" target="_blank" style="margin: 36px;">動畫來源</a></p>
+
+    <h2 style="margin: 36px;">範例程式碼</h2>
+    <pre>
+        <h6>
+            &lt;div id="animation-container"&gt;
+                &lt;div id="lottie"&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            
+            &lt;script&gt;
+                // 指定 c.json 文件的路径
+                const animationUrl = 'c.json'; 
+
+                // 初始化 Lottie 动画
+                const animation = lottie.loadAnimation({
+                container: document.getElementById('lottie'), // 指定容器
+                renderer: 'svg', // 渲染方式
+                loop: true, // 是否循环
+                autoplay: true, // 是否自动播放
+                path: animationUrl // JSON 文件路径
+                });
+            &lt;/script&gt;
+        </h6>        
+    </pre>
+
+    <h2 style="margin: 36px;">範例展示效果</h2>
+    <div id="animation-container">
+        <div id="lottie"></div>
+    </div>
+    <br><br>
+
+    <script>
+        // 指定 c.json 文件的路径
+        const animationUrl = 'c.json'; 
+
+        // 初始化 Lottie 动画
+        const animation = lottie.loadAnimation({
+            container: document.getElementById('lottie'), // 指定容器
+            renderer: 'svg', // 渲染方式
+            loop: true, // 是否循环
+            autoplay: true, // 是否自动播放
+            path: animationUrl // JSON 文件路径
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>文字轉語音</title>
+    <style>
+        .speech-wrapper {
+            padding-top: 10px;
+        }
+    </style>
+    <!-- 引入 Element UI 样式和 Vue.js -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+    <!-- Navbar 位置 -->
+    <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="20241030-41041102.html">回首頁</a>
+        </div>
+    </nav>
+    <br>
+    <h1 class="text-center">文字轉語音效果示範</h1>
+    <br>
+    <p><a href="https://codepen.io/_tianxia/pen/WNNPVob" target="_blank" style="margin: 36px;">SpeechSynthesis Demo</a></p>
+    <h2 style="margin: 36px;">範例程式碼</h2>
+    <pre>
+        <h6>
+            &lt;el-form-item label="文字:"&gt;
+                &lt;el-input v-model="queryParams.text" type="textarea" :autosize="{ minRows: 2, maxRows: 6}" placeholder="想聽什麼。說來聽聽？" size="mini"&gt;&lt;/el-input&gt;
+            &lt;/el-form-item&gt;
+
+            &lt;el-form-item label="選擇語言:"&gt;
+                &lt;el-select v-model="queryParams.lang" @change="onChange" size="mini"&gt;
+                    &lt;el-option v-for="item in voiceData" :key="item.voiceURI" :value="item.lang" :label="item.lang"&gt;&lt;/el-option&gt;
+                &lt;/el-select&gt;
+            &lt;/el-form-item&gt;
+
+            &lt;el-form-item label="聲音:"&gt;
+                &lt;span&gt;{{queryParams.voiceURI}}&lt;/span&gt;
+            &lt;/el-form-item&gt;
+
+            &lt;el-form-item label="音量:"&gt;
+                &lt;el-slider v-model="queryParams.volume" :min="0" :max="1" :step="0.1" show-input size="mini"&gt;&lt;/el-slider&gt;
+            &lt;/el-form-item&gt;
+
+            &lt;el-form-item label="速度:"&gt;
+                &lt;el-slider v-model="queryParams.rate" :min="0.5" :max="2" :step="0.1" show-input size="mini"&gt;&lt;/el-slider&gt;
+            &lt;/el-form-item&gt;
+
+            &lt;el-form-item label="音調:"&gt;
+                &lt;el-slider v-model="queryParams.pitch" :min="0" :max="2" :step="0.1" show-input size="mini"&gt;&lt;/el-slider&gt;
+            &lt;/el-form-item&gt;
+
+            &lt;el-form-item&gt;
+                &lt;el-tooltip class="item" effect="dark" content="功能不穩定，有可能沒有聲音，重新載入試試看嗎？？" placement="top"&gt;
+                    &lt;el-button type="primary" @click="onSpeak" size="mini"&gt;朗讀&lt;/el-button&gt;
+                &lt;/el-tooltip&gt;
+            &lt;/el-form-item&gt;
+        </h6>            
+    </pre>
+    <h2 style="margin: 36px;">範例展示效果</h2>
+    <div id="app" style="margin: 66px;">
+
+        <div class="speech-wrapper" element-loading-text="載入語言包..." v-loading="!voiceData.length">
+            <el-form v-model="queryParams" label-width="90px" label-position="left" size="mini">
+                <el-form-item label="文字:">
+                    <el-input v-model="queryParams.text" type="textarea" :autosize="{ minRows: 2, maxRows: 6}" placeholder="想聽什麼，說來聽聽？" size="mini"></el-input>
+                </el-form-item>
+    
+                <el-form-item label="選擇語言:">
+                    <el-select v-model="queryParams.lang" @change="onChange" size="mini">
+                        <el-option v-for="item in voiceData" :key="item.voiceURI" :value="item.lang" :label="item.lang"></el-option>
+                    </el-select>
+                </el-form-item>
+    
+                <el-form-item label="聲音:">
+                    <span>{{queryParams.voiceURI}}</span>
+                </el-form-item>
+    
+                <el-form-item label="音量:">
+                    <el-slider v-model="queryParams.volume" :min="0" :max="1" :step="0.1" show-input size="mini"></el-slider>
+                </el-form-item>
+    
+                <el-form-item label="速度:">
+                    <el-slider v-model="queryParams.rate" :min="0.5" :max="2" :step="0.1" show-input size="mini"></el-slider>
+                </el-form-item>
+    
+                <el-form-item label="音调:">
+                    <el-slider v-model="queryParams.pitch" :min="0" :max="2" :step="0.1" show-input size="mini"></el-slider>
+                </el-form-item>
+    
+                <el-form-item>
+                    <el-tooltip class="item" effect="dark" content="功能不穩定，有可能沒有聲音，重新載入試試看嗎？？" placement="top">
+                        <el-button type="primary" @click="onSpeak" size="mini">朗讀</el-button>
+                    </el-tooltip>
+                </el-form-item>
+            </el-form>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data () {
+                return {
+                    voiceData: [],
+                    queryParams: {
+                        voiceURI: '',
+                        lang: 'zh-CN',
+                        volume: 1,
+                        pitch: 1,
+                        rate: 1,
+                        text: '你好，歡迎使用文字轉語音功能。'
+                    },
+                    speechInstance: null,
+                }
+            },
+
+            methods: {
+                onChange (e) {
+                    let chosenItem = this.voiceData.find(item => item.lang === e);
+                    if (chosenItem) {
+                        this.queryParams.voiceURI = chosenItem.voiceURI;
+                    }
+                },
+
+                onSpeak () {
+                    this.speechInstance = new SpeechSynthesisUtterance();
+                    Object.assign(this.speechInstance, this.queryParams);
+                    this.speechInstance.voice = this.voiceData.find(voice => voice.voiceURI === this.queryParams.voiceURI);
+                    if (typeof speechSynthesis !== "undefined") {
+                        speechSynthesis.speak(this.speechInstance);
+                    }
+                }
+            },
+
+            mounted () {
+                // 监听语音包加载完毕事件
+                if (typeof speechSynthesis !== "undefined") {
+                    speechSynthesis.onvoiceschanged = () => {
+                        this.voiceData = speechSynthesis.getVoices();
+                        if (this.voiceData.length) {
+                            const defaultVoice = this.voiceData.find(voice => voice.lang === this.queryParams.lang);
+                            if (defaultVoice) {
+                                this.queryParams.voiceURI = defaultVoice.voiceURI;
+                            }
+                        }
+                    };
+                }
+            }
+        });
+    </script>
+</body>
+</html>
