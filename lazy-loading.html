@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lazy Loading 惰性載入</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        img {
+            width: 100%;
+            height: auto; /* 修改为 auto 以保持比例 */
+            display: block;
+            margin-bottom: 10px;
+        }
+        #image-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin: 20px;
+        }
+        .col-4 {
+            width: 32%; /* 让每列宽度为 32% */
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar 位置 -->
+    <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="20241030-41041102.html">回首頁</a>
+        </div>
+    </nav>
+
+    <br>
+    <h1 class="text-center">Lazy Loading 效果示範</h1>
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading" target="_blank" style="margin: 36px;">mozilla web docs官網</a></p>
+
+    <h2 style="margin: 36px;">範例程式碼</h2>
+    <pre>
+        <h6>
+            &lt;div id="image-container"&gt;
+                &lt;!-- 生成的圖片將插入此處 --&gt;
+            &lt;/div&gt;
+
+            &lt;script&gt;
+                // 使用 JavaScript 動態生成圖片
+                function generateImages(imageCount) {
+                    const container = document.getElementById('image-container');
+                    for (let i = 1; i &lt;= imageCount; i++) {
+                        const col = document.createElement('div');
+                        col.className = 'col-4';
+
+                        const img = document.createElement('img');
+                        img.dataset.src = `http://fakeimg.pl/300x250/?text=${i}`; // 使用假圖像
+                        img.className = 'lazy';
+                        img.alt = `圖片 ${i}`;
+
+                        col.appendChild(img);
+                        container.appendChild(col);
+                    }
+                }
+                // 初始化加載
+                function initLazyLoading() {
+                    const images = document.querySelectorAll('.lazy');
+                    const observer = new IntersectionObserver(entries =&gt; {
+                        entries.forEach(entry =&gt; {
+                            if (entry.isIntersecting) {
+                                const img = entry.target;
+                                img.src = img.dataset.src; // 當進入視口時加載圖片
+                                observer.unobserve(img); // 停止觀察該圖片
+                            }
+                        });
+                    });
+                    images.forEach(image =&gt; observer.observe(image)); // 開始觀察圖片
+                }
+                // 生成 99 張圖片並初始化懶加載
+                generateImages(99);
+                initLazyLoading();
+            &lt;/script&gt;
+        </h6>
+    </pre>
+
+    <h2 style="margin: 36px;">範例展示效果</h2>
+    <div id="image-container">
+        <!-- 生成的圖片將插入此處 -->
+    </div>
+
+    <script>
+        // 使用 JavaScript 動態生成圖片
+        function generateImages(imageCount) {
+            const container = document.getElementById('image-container');
+            for (let i = 1; i <= imageCount; i++) {
+                const col = document.createElement('div');
+                col.className = 'col-4';
+
+                const img = document.createElement('img');
+                img.dataset.src = `http://fakeimg.pl/300x250/?text=${i}`; // 使用假圖像
+                img.className = 'lazy';
+                img.alt = `圖片 ${i}`;
+
+                col.appendChild(img);
+                container.appendChild(col);
+            }
+        }
+
+        // 初始化加載
+        function initLazyLoading() {
+            const images = document.querySelectorAll('.lazy');
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src; // 當進入視口時加載圖片
+                        observer.unobserve(img); // 停止觀察該圖片
+                    }
+                });
+            });
+            images.forEach(image => observer.observe(image)); // 開始觀察圖片
+        }
+
+        // 生成 99 張圖片並初始化懶加載
+        generateImages(99);
+        initLazyLoading();
+    </script>
+
+</body>
+</html>
