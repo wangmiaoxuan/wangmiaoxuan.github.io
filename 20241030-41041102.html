@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS 套件介紹網站</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .btn-primary {
+            background-color: #66B3FF; /* 設定按鈕背景顏色 */
+            border-color: #66B3FF; /* 設定按鈕邊框顏色 */
+        }
+        
+        .btn-primary:hover {
+            background-color: #5599E0; /* 按鈕懸停時的背景顏色 */
+            border-color: #5599E0; /* 按鈕懸停時的邊框顏色 */
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="20241030-41041102.html">首頁</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="aos.html">AOS 動畫</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="text-to-speech.html">文字轉語音</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lottie.html">Lottie 動畫</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chart.html">Chart 圖表</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Lazy-loading.html">Lazy-loading 惰性載入</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Swiper.html">Swiper 輪播插件</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Particles.html">Particles 粒子效果</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Moment.html">Moment日期處理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Three.html">Three 3D渲染</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Typed.html">Typed 打字效果</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+  
+    <div id="navbar-placeholder"></div>
+
+    <div class="container mt-3">
+        <h1>JS 套件介紹網站</h1>
+        <p>選擇下方卡片以查看不同的插件介紹！</p>
+        <div class="row">
+            <!-- 卡片 1：AOS 動畫 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">AOS 動畫</h5>
+                        <p class="card-text">讓元素在滾動時顯示動畫效果的簡易插件。</p>
+                        <a href="aos.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 2：文字轉語音 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">文字轉語音</h5>
+                        <p class="card-text">使用 Web Speech API 將文字轉換為語音。</p>
+                        <a href="text-to-speech.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 3：Lottie 動畫 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Lottie 動畫</h5>
+                        <p class="card-text">展示高品質的 JSON 動畫，適合增強網頁效果。</p>
+                        <a href="lottie.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 4：Chart.js 圖表 -->
+            <div class="col-md-4 mt-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Chart 圖表</h5>
+                        <p class="card-text">使用 Chart.js 繪製各種類型的圖表。</p>
+                        <a href="chart.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 5：Lazy-loading 懶加載 -->
+            <div class="col-md-4 mt-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Lazy-loading 惰性載入</h5>
+                        <p class="card-text">使用 Intersection Observer 實現的懶加載效果。</p>
+                        <a href="lazy-loading.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 6：Swiper 輪播插件 -->
+            <div class="col-md-4 mt-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Swiper 輪播插件</h5>
+                        <p class="card-text">提供流暢且可自訂的輪播效果，支援手勢滑動。</p>
+                        <a href="swiper.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 7：Particles.js 粒子效果 -->
+            <div class="col-md-4 mt-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Particles 粒子效果</h5>
+                        <p class="card-text">在頁面上創建交互式的粒子效果，增強視覺吸引力。</p>
+                        <a href="particles.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 8：Moment.js 日期處理 -->
+            <div class="col-md-4 mt-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Moment 日期處理</h5>
+                        <p class="card-text">簡化日期和時間的操作與格式化。</p>
+                        <a href="moment.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 9：Three.js 3D 渲染 -->
+            <div class="col-md-4 mt-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Three 3D 渲染</h5>
+                        <p class="card-text">建立和展示 3D 圖形的強大工具。</p>
+                        <a href="three.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 10：Typed.js 打字效果 -->
+            <div class="col-md-4 mt-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Typed 打字效果</h5>
+                        <p class="card-text">用於在網頁上顯示打字機效果的簡單插件。</p>
+                        <a href="typed.html" class="btn btn-primary">查看詳細</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <script src="navbar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous">
+    </script>
+
+</body>
+
+</html>

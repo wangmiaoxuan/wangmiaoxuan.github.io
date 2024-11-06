@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記憶大考驗</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* 預設背景顏色 */
+        .girl {
+            background-color: #E8D6F0; /* 淺紫色 */
+        }
+
+        .animal {
+            background-color: #E8F5E9; /* 淺綠色 */
+        }
+
+        .food {
+            background-color: #EBE1D5; /* 淺咖啡色 */
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            font-size: 36px;
+        }
+
+        /* 深色標題背景 */
+        .title-girl {
+            background-color: #A75E9D; /* 深紫色 */
+            color: white;
+        }
+
+        .title-animal {
+            background-color: #388E3C; /* 深綠色 */
+            color: white;
+        }
+
+        .title-food {
+            background-color: #7B4B3A; /* 深咖啡色 */
+            color: white;
+        }
+
+        .grid {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #f1f1f1;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+            border: 2px solid #aaa;
+            background-image: url('images/back.png'); /* 卡片背面 */
+            background-size: cover;
+        }
+
+        .flipped {
+            background-color: white;
+            background-size: cover;
+        }
+
+        .matched {
+            visibility: hidden;
+        }
+
+        #result {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        #timer, #playTimer {
+            text-align: center;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body id="body">
+    <h1 id="title">記憶大考驗</h1>
+
+    <div style="text-align: center;">
+        <label for="size">網格大小:</label>
+        <select id="size">
+            <option value="2">2x2</option>
+            <option value="4">4x4</option>
+            <option value="6">6x6</option>
+        </select>
+
+        <label for="type">牌面類型:</label>
+        <select id="type">
+            <option value="girl">女孩</option>
+            <option value="animal">動物</option>
+            <option value="food">食物</option>
+        </select>
+
+        <label for="time">記憶時間:</label>
+        <select id="time">
+            <option value="0">直接開始</option>
+            <option value="5000">5秒</option>
+            <option value="10000">10秒</option>
+            <option value="15000">15秒</option>
+        </select>
+
+        <button id="confirmBtn">確認</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    
+    <p id="timer"></p> <!-- 倒計時顯示區域 -->
+    <p id="playTimer"></p> <!-- 遊玩時間顯示區域 -->
+    
+    <p id="result">按下「確認」即開始遊戲</p>
+
+    <!-- 音效區域 -->
+    <audio id="successSound" src="sounds/success.mp3"></audio>
+    <audio id="failSound" src="sounds/fail.mp3"></audio>
+
+    <script>
+        let grid = document.getElementById('grid');
+        let sizeSelect = document.getElementById('size');
+        let typeSelect = document.getElementById('type');
+        let timeSelect = document.getElementById('time');
+        let result = document.getElementById('result');
+        let timerDisplay = document.getElementById('timer'); // 倒計時顯示
+        let playTimerDisplay = document.getElementById('playTimer'); // 遊玩時間顯示
+        let successSound = document.getElementById('successSound');
+        let failSound = document.getElementById('failSound');
+        let title = document.getElementById('title');
+        let body = document.getElementById('body');
+        let confirmBtn = document.getElementById('confirmBtn');
+
+        let firstCard = null;
+        let secondCard = null;
+        let lockBoard = true;
+        let matchedPairs = 0;
+        let gridSize = 0;
+        let countdownTimer;
+        let gameTimer;
+        let gameStartTime;
+        let gameStarted = false; // 記錄遊戲是否已經開始
+
+        // 初始化遊戲
+        function initGame() {
+            let size = sizeSelect.value;
+            gridSize = size * size;
+            let cardValues = generateCardValues(gridSize);
+            createGrid(size, cardValues);
+            matchedPairs = 0;
+            result.innerText = '遊戲已開始';
+            timerDisplay.innerText = ''; // 重置倒計時顯示
+            playTimerDisplay.innerText = '遊玩時間: 0秒'; // 重置遊玩時間顯示
+            changeTheme(); // 改變主題顏色
+            clearInterval(gameTimer); // 清除之前的遊玩時間計時器
+            gameStarted = false; // 重置遊戲開始狀態
+
+            // 開始倒計時
+            let countdownTime = parseInt(timeSelect.value); // 轉換為毫秒
+            if (countdownTime > 0) {
+                timerDisplay.innerText = `剩餘時間: ${countdownTime / 1000}秒`;
+                flipAllCards(); // 翻開所有卡片
+                countdownTimer = setInterval(() => {
+                    countdownTime -= 1000; // 每秒減少
+                    timerDisplay.innerText = `剩餘時間: ${countdownTime / 1000}秒`;
+                    if (countdownTime <= 0) {
+                        clearInterval(countdownTimer);
+                        resetCards(); // 倒數結束後翻回卡片
+                        timerDisplay.innerText = ''; // 隱藏倒數顯示
+                        result.innerText = ''; // 倒數結束後字樣消失
+                        lockBoard = false; // 解除鎖定，允許點擊卡片
+                    }
+
+                }, 1000); // 每秒更新
+            } else {
+                result.innerText = ''; // 沒有倒數時間時立即開始
+                lockBoard = false; // 解除鎖定，允許點擊卡片
+            }
+        }
+
+        // 改變主題顏色
+        function changeTheme() {
+            let type = typeSelect.value;
+            if (type === 'girl') {
+                body.className = 'girl';
+                title.className = 'title-girl';
+            } else if (type === 'animal') {
+                body.className = 'animal';
+                title.className = 'title-animal';
+            } else if (type === 'food') {
+                body.className = 'food';
+                title.className = 'title-food';
+            }
+        }
+
+        // 創建卡牌網格
+        function createGrid(size, cardValues) {
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${size}, 100px)`;
+            grid.style.gridTemplateRows = `repeat(${size}, 100px)`;
+
+            cardValues.forEach((value) => {
+                let card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.value = value;
+                card.addEventListener('click', flipCard);
+                grid.appendChild(card);
+            });
+        }
+
+        // 生成卡牌值，確保成對
+        function generateCardValues(gridSize) {
+            let values = [];
+            let cardType = typeSelect.value;
+            let maxImages = 18; // 假設最多有 18 張圖片
+
+            for (let i = 1; i <= gridSize / 2; i++) {
+                let imageNumber = (i % maxImages) + 1; // 循環使用圖片
+                let cardValue = `${cardType}/${imageNumber.toString().padStart(2, '0')}.png`;
+                values.push(cardValue);
+                values.push(cardValue); // 每張卡片應該有對應的配對
+            }
+            return values.sort(() => 0.5 - Math.random()); // 隨機排列
+        }
+
+        // 翻卡邏輯
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            // 第一次翻牌時開始遊戲時間計時
+            if (!gameStarted) {
+                gameStarted = true;
+                gameStartTime = Date.now();
+                gameTimer = setInterval(updatePlayTime, 1000); // 每秒更新遊玩時間
+            }
+
+            this.style.backgroundImage = `url('images/${this.dataset.value}')`;
+            this.classList.add('flipped');
+
+            if (!firstCard) {
+                firstCard = this;
+                return;
+            }
+            secondCard = this;
+            lockBoard = true;
+
+            // 檢查是否配對成功
+            checkForMatch();
+        }
+
+        // 檢查配對
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.value === secondCard.dataset.value;
+            if (isMatch) {
+                disableCards();
+                successSound.play();
+                matchedPairs += 2;
+                if (matchedPairs === gridSize) {
+                    clearInterval(gameTimer); // 停止遊玩時間計時器
+                    result.innerText = '恭喜你，完成了遊戲！';
+                }
+            } else {
+                unflipCards();
+                failSound.play();
+            }
+        }
+
+        // 停用已配對的卡片
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            resetBoard();
+        }
+
+        // 如果未配對，翻回卡片
+        function unflipCards() {
+            setTimeout(() => {
+                firstCard.style.backgroundImage = "url('images/back.png')";
+                secondCard.style.backgroundImage = "url('images/back.png')";
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                resetBoard();
+            }, 1000);
+        }
+
+        // 重置卡片狀態
+        function resetBoard() {
+            [firstCard, secondCard] = [null, null];
+            lockBoard = false;
+        }
+
+        // 翻開所有卡片
+        function flipAllCards() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.backgroundImage = `url('images/${card.dataset.value}')`;
+            });
+        }
+
+        // 重置所有卡片
+        function resetCards() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.backgroundImage = "url('images/back.png')";
+                card.classList.remove('flipped');
+            });
+        }
+
+        // 更新遊玩時間顯示
+        function updatePlayTime() {
+            let currentTime = Date.now();
+            let elapsedTime = Math.floor((currentTime - gameStartTime) / 1000);
+            playTimerDisplay.innerText = `遊玩時間: ${elapsedTime}秒`;
+        }
+
+        // 綁定確認按鈕事件
+        confirmBtn.addEventListener('click', initGame);
+    </script>
+</body>
+</html>

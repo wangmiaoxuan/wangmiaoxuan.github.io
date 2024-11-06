@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打磚塊遊戲</title>
+  <style>
+    canvas {
+      display: block;
+      width: 600px;
+      margin: 0 auto;
+      background-color: #3c506f;
+    }
+    #gameContainer {
+      text-align: center;
+    }
+    #score, #lives {
+      font-size: 18px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer">
+    <h1>打磚塊遊戲</h1>
+    <canvas id="gameCanvas" width="680" height="520"></canvas>
+    <p id="score">分數: 0</p>
+    <p id="lives">生命: 3</p>
+    <p id="difficulty">選擇難度: 
+      <button onclick="setDifficulty('easy')">簡單</button>
+      <button onclick="setDifficulty('medium')">中等</button>
+      <button onclick="setDifficulty('hard')">困難</button>
+    </p>
+    <button onclick="startGame()">開始遊戲</button>
+  </div>
+
+  <audio id="backgroundMusic" loop>
+    <source src="sounds/2.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let ballRadius = 10;
+    let x, y, dx, dy;
+    let paddleHeight = 10;
+    let paddleWidth = 75;
+    let paddleX;
+    let rightPressed = false;
+    let leftPressed = false;
+    let brickRowCount = 3;
+    let brickColumnCount = 5;
+    let brickWidth = 75;
+    let brickHeight = 20;
+    let brickPadding = 10;
+    let brickOffsetTop = 30;
+    let score = 0;
+    let lives = 3;
+    let bricks = [];
+    let difficulty = "easy";
+    let ballSpeedMultiplier = 1;
+    
+    const ballTrail = []; // 用於儲存尾跡位置
+    const trailLength = 10; // 尾跡長度
+
+    const backgroundMusic = document.getElementById("backgroundMusic");
+    backgroundMusic.play();
+
+    const hitSound = new Audio('sounds/blow.mp3');  
+    const loseLifeSound = new Audio('sounds/loseLife.mp3');
+
+    function initBricks() {
+      const totalBrickWidth = brickColumnCount * brickWidth + (brickColumnCount - 1) * brickPadding;
+      const brickOffsetLeft = (canvas.width - totalBrickWidth) / 2;
+
+      for(let c = 0; c < brickColumnCount; c++) {
+        bricks[c] = [];
+        for(let r = 0; r < brickRowCount; r++) {
+          let hitCount = (difficulty === "hard" && Math.random() < 0.7) ? Math.floor(Math.random() * 3) + 1 : 1;
+          bricks[c][r] = { x: 0, y: 0, status: hitCount };
+          bricks[c][r].x = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
+          bricks[c][r].y = (r * (brickHeight + brickPadding)) + brickOffsetTop;
+        }
+      }
+    }
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+
+    function keyDownHandler(e) {
+      if(e.key === "Right" || e.key === "ArrowRight") {
+        rightPressed = true;
+      } else if(e.key === "Left" || e.key === "ArrowLeft") {
+        leftPressed = true;
+      }
+    }
+
+    function keyUpHandler(e) {
+      if(e.key === "Right" || e.key === "ArrowRight") {
+        rightPressed = false;
+      } else if(e.key === "Left" || e.key === "ArrowLeft") {
+        leftPressed = false;
+      }
+    }
+
+    function mouseMoveHandler(e) {
+      let relativeX = e.clientX - canvas.offsetLeft;
+      if(relativeX > 0 && relativeX < canvas.width) {
+        paddleX = relativeX - paddleWidth / 2;
+      }
+    }
+
+    function collisionDetection() {
+      for(let c = 0; c < brickColumnCount; c++) {
+        for(let r = 0; r < brickRowCount; r++) {
+          let b = bricks[c][r];
+          if(b.status > 0) {
+            if(x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
+              dy = -dy;
+              b.status--;
+              score++;
+              hitSound.play();
+              if (allBricksCleared()) {
+                alert("恭喜你贏得勝利！"); // 所有磚塊被打完
+                document.location.reload();
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function allBricksCleared() {
+      for(let c = 0; c < brickColumnCount; c++) {
+        for(let r = 0; r < brickRowCount; r++) {
+          if(bricks[c][r].status > 0) {
+            return false; // 如果還有磚塊沒有被打掉
+          }
+        }
+      }
+      return true; // 所有磚塊都已被打掉
+    }
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+      ctx.fillStyle = "#87ace9"; 
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function drawPaddle() {
+      ctx.beginPath();
+      ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+      ctx.fillStyle = "#87ace9"; 
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function drawBricks() {
+      for(let c = 0; c < brickColumnCount; c++) {
+        for(let r = 0; r < brickRowCount; r++) {
+          let b = bricks[c][r];
+          if(b.status > 0) {
+            ctx.beginPath();
+            ctx.rect(b.x, b.y, brickWidth, brickHeight);
+            ctx.fillStyle = b.status === 1 ? "#ff5757" : "#ffbf50"; 
+            ctx.fill();
+            ctx.closePath();
+            ctx.fillStyle = "#000"; 
+            ctx.fillText(b.status, b.x + brickWidth / 2 - 5, b.y + brickHeight / 2 + 5); 
+          }
+        }
+      }
+    }
+
+    function drawScore() {
+      document.getElementById("score").innerHTML = "分數: " + score;
+    }
+
+    function drawLives() {
+      document.getElementById("lives").innerHTML = "生命: " + lives;
+    }
+
+    function setDifficulty(level) {
+      difficulty = level;
+      if (level === "easy") {
+        ballSpeedMultiplier = 1;
+        brickRowCount = 3;
+        brickColumnCount = 5;
+      } else if (level === "medium") {
+        ballSpeedMultiplier = 1.5;
+        brickRowCount = 4;
+        brickColumnCount = 6;
+      } else if (level === "hard") {
+        ballSpeedMultiplier = 2;
+        brickRowCount = 5;
+        brickColumnCount = 7;
+      }
+      resetGame();
+    }
+
+    function resetGame() {
+      score = 0;
+      initBricks();
+      x = canvas.width / 2;
+      y = canvas.height - 30;
+      dx = 2 * ballSpeedMultiplier;
+      dy = -2 * ballSpeedMultiplier;
+      paddleX = (canvas.width - paddleWidth) / 2;
+      drawScore();
+      drawLives(); // 確保在重置時更新生命數量顯示
+    }
+
+    function startGame() {
+      resetGame();
+      backgroundMusic.play(); // 移動到這裡以確保在用戶點擊後播放音樂
+      draw();
+    }
+
+    function drawBallTrail() {
+      ballTrail.push({ x: x, y: y });
+      if (ballTrail.length > trailLength) {
+        ballTrail.shift(); // 限制尾跡長度
+      }
+
+      for (let i = 0; i < ballTrail.length; i++) {
+        const alpha = (1 - (i / ballTrail.length)); // 漸變透明度
+        ctx.fillStyle = `rgba(135, 172, 233, ${alpha})`; // 設定尾跡顏色
+        ctx.beginPath();
+        ctx.arc(ballTrail[i].x, ballTrail[i].y, ballRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBricks();
+      drawBall();
+      drawPaddle();
+      drawScore();
+      drawLives();
+      drawBallTrail();
+      collisionDetection();
+
+      if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+        dx = -dx;
+      }
+      if (y + dy < ballRadius) {
+        dy = -dy;
+      } else if (y + dy > canvas.height - ballRadius) {
+        if (x > paddleX && x < paddleX + paddleWidth) {
+          dy = -dy;
+        } else {
+          lives--;
+          loseLifeSound.play();
+          drawLives();
+          if (lives === 0) {
+            alert("遊戲結束，請再試一次！");
+            document.location.reload();
+          } else {
+            // 瞬間將球重新放回初始位置
+            x = canvas.width / 2;
+            y = canvas.height - 30;
+            dx = 2 * ballSpeedMultiplier;
+            dy = -2 * ballSpeedMultiplier;
+          }
+        }
+      }
+
+      if (rightPressed && paddleX < canvas.width - paddleWidth) {
+        paddleX += 7;
+      } else if (leftPressed && paddleX > 0) {
+        paddleX -= 7;
+      }
+
+      x += dx;
+      y += dy;
+      requestAnimationFrame(draw);
+    }
+  </script>
+</body>
+</html>
