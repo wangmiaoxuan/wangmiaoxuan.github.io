@@ -1,87 +1,84 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Google 登入範例</title>
-  <!-- Firebase JavaScript SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js"></script>
+  <title>Google 認證與會員管理</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
 </head>
 <body>
-  <h1>Google 登入與註冊範例</h1>
-
-  <!-- 登入按鈕 -->
-  <button id="login-btn">使用 Google 登入 / 註冊</button>
-
-  <!-- 顯示使用者資訊 -->
-  <div id="user-info" style="margin-top: 20px;"></div>
-
-  <!-- Firebase 初始化配置程式碼 -->
+  <h1>Google 認證與會員管理</h1>
+  <button id="register">註冊</button>
+  <button id="login">登入</button>
+  <div id="user-info" style="display: none;">
+    <h2>會員資訊</h2>
+    <img id="user-photo" alt="User Photo" style="width: 100px; height: 100px; border-radius: 50%;"><br>
+    <span id="user-name"></span><br>
+    <span id="user-email"></span><br>
+    <span id="last-login"></span>
+  </div>
   <script>
-    // Firebase 項目配置
+    // Firebase 配置
     const firebaseConfig = {
-      apiKey: "AIzaSyCQrtyMawvO348O-1pa_-Ola-94VKmTA9s",
-      authDomain: "miaoxuan-86368.firebaseapp.com",
-      projectId: "miaoxuan-86368",
-      storageBucket: "miaoxuan-86368.appspot.com",
-      messagingSenderId: "123456789012",
-      appId: "1:123456789012:web:abcdefgh12345678",
-      databaseURL: "https://miaoxuan-86368-default-rtdb.firebaseio.com"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
-    // 初始化 Firebase
-    firebase.initializeApp(firebaseConfig);
-  </script>
-
-  <!-- 功能程式碼 -->
-  <script>
-    // 引入 Firebase Authentication 和 Realtime Database
+    const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // 點擊登入按鈕事件
-    document.getElementById('login-btn').addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider(); // Google 登入提供者
+    const registerButton = document.getElementById('register');
+    const loginButton = document.getElementById('login');
+    const userInfo = document.getElementById('user-info');
+    const userPhoto = document.getElementById('user-photo');
+    const userName = document.getElementById('user-name');
+    const userEmail = document.getElementById('user-email');
+    const lastLogin = document.getElementById('last-login');
+
+    // Google 認證
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    async function handleAuth(isRegistering) {
       try {
-        // 彈出 Google 登入視窗
         const result = await auth.signInWithPopup(provider);
         const user = result.user;
 
-        // 獲取使用者資訊
-        const userInfo = {
-          name: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          lastLogin: new Date().toISOString(),
-        };
-
-        // 寫入或更新使用者資料到 Realtime Database
-        const userRef = db.ref(`users/${user.uid}`);
-        const snapshot = await userRef.once('value');
-
-        if (snapshot.exists()) {
-          // 使用者已存在，更新最後登入時間
-          await userRef.update({ lastLogin: userInfo.lastLogin });
-          alert("登入成功！");
+        if (isRegistering) {
+          // 註冊：將會員資料儲存至 Realtime Database
+          const now = new Date().toISOString();
+          await db.ref('users/' + user.uid).set({
+            name: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            lastLogin: now
+          });
         } else {
-          // 使用者不存在，新增資料
-          await userRef.set(userInfo);
-          alert("註冊成功！");
+          // 登入：更新最後登入時間
+          const now = new Date().toISOString();
+          await db.ref('users/' + user.uid).update({ lastLogin: now });
         }
 
-        // 顯示使用者資訊到畫面
-        document.getElementById('user-info').innerHTML = ` 
-          <p><strong>姓名：</strong>${userInfo.name}</p> 
-          <p><strong>Email：</strong>${userInfo.email}</p> 
-          <img src="${userInfo.photoURL}" alt="使用者照片" style="width: 100px; height: 100px;"> 
-          <p><strong>最後登入時間：</strong>${userInfo.lastLogin}</p> 
-        `;
+        // 顯示會員資訊
+        const userData = (await db.ref('users/' + user.uid).get()).val();
+        userPhoto.src = userData.photoURL;
+        userName.textContent = `姓名: ${userData.name}`;
+        userEmail.textContent = `Email: ${userData.email}`;
+        lastLogin.textContent = `最後登入: ${userData.lastLogin}`;
+        userInfo.style.display = 'block';
       } catch (error) {
-        console.error("登入失敗:", error);
-        alert("登入失敗，請稍後再試！");
+        console.error('認證失敗:', error.message);
       }
-    });
+    }
+
+    registerButton.addEventListener('click', () => handleAuth(true));
+    loginButton.addEventListener('click', () => handleAuth(false));
   </script>
 </body>
 </html>
