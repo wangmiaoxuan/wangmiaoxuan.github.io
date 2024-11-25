@@ -14,7 +14,6 @@
       margin: 0;
       background-color: #f8f9fa;
     }
-
     .container {
       text-align: center;
       background: #ffffff;
@@ -24,7 +23,6 @@
       max-width: 400px;
       width: 100%;
     }
-
     button {
       background-color: #007bff;
       color: white;
@@ -35,15 +33,12 @@
       font-size: 16px;
       margin: 10px 0;
     }
-
     button:hover {
       background-color: #0056b3;
     }
-
     #user-info {
       margin-top: 20px;
     }
-
     img {
       border-radius: 50%;
     }
@@ -69,7 +64,7 @@
       authDomain: "fir-31fde.firebaseapp.com",
       databaseURL: "https://fir-31fde-default-rtdb.firebaseio.com",
       projectId: "fir-31fde",
-      storageBucket: "project-248393751999.firebasestorage.app",
+      storageBucket: "fir-31fde.firebasestorage.app",
       messagingSenderId: "248393751999",
       appId: "1:248393751999:web:af9d6a0d12c90fc94f550a",
       measurementId: "G-06SM1YWLZZ"
@@ -115,7 +110,7 @@
           displayUserInfo(user);
         } catch (error) {
           console.error("註冊失敗：", error);
-          alert("註冊失敗！");
+          alert("註冊失敗！請檢查錯誤。");
         }
       });
 
@@ -134,7 +129,7 @@
           displayUserInfo(user);
         } catch (error) {
           console.error("登入失敗：", error);
-          alert("登入失敗！");
+          alert("登入失敗！請檢查錯誤。");
         }
       });
 
