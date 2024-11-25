@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Google 登入與註冊</title>
+  <!-- Firebase JavaScript SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f8f9fa;
+    }
+
+    .container {
+      text-align: center;
+      background: #ffffff;
+      padding: 20px 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #user-info {
+      margin-top: 20px;
+    }
+
+    img {
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Google 註冊與登入</h1>
+
+    <!-- 註冊與登入按鈕 -->
+    <a href="register.html"><button id="register-btn">註冊</button></a>
+    <a href="login.html"><button id="login-btn">登入</button></a>
+
+    <!-- 顯示使用者資訊 -->
+    <div id="user-info"></div>
+  </div>
+
+  <!-- Firebase 初始化配置程式碼 -->
+  <script>
+    // Firebase 項目配置
+    const firebaseConfig = {
+      apiKey: "AIzaSyCQrtyMawvO348O-1pa_-Ola-94VKmTA9s",
+      authDomain: "miaoxuan-86368.firebaseapp.com",
+      projectId: "miaoxuan-86368",
+      storageBucket: "miaoxuan-86368.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "1:123456789012:web:abcdefgh12345678",
+      databaseURL: "https://miaoxuan-86368-default-rtdb.firebaseio.com"
+    };
+    // 初始化 Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <!-- 功能程式碼 -->
+  <script>
+    // 引入 Firebase Authentication 和 Realtime Database
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // 註冊按鈕事件
+    document.getElementById('register-btn').addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider(); // Google 登入提供者
+      try {
+        // 彈出 Google 登入視窗
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+
+        // 獲取使用者資訊
+        const userInfo = {
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          lastLogin: new Date().toISOString(),
+        };
+
+        // 寫入新使用者資料到 Realtime Database
+        const userRef = db.ref(`users/${user.uid}`);
+        const snapshot = await userRef.once('value');
+
+        if (snapshot.exists()) {
+          alert("此帳號已註冊，請直接登入！");
+        } else {
+          await userRef.set(userInfo);
+          alert("註冊成功！");
+        }
+      } catch (error) {
+        console.error("註冊失敗:", error);
+        alert("註冊失敗，請稍後再試！");
+      }
+    });
+
+    // 登入按鈕事件
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider(); // Google 登入提供者
+      try {
+        // 彈出 Google 登入視窗
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+
+        // 更新最後登入時間
+        const userRef = db.ref(`users/${user.uid}`);
+        const snapshot = await userRef.once('value');
+
+        if (snapshot.exists()) {
+          await userRef.update({ lastLogin: new Date().toISOString() });
+          alert("登入成功！");
+        } else {
+          alert("未註冊的帳號，請先註冊！");
+        }
+
+        // 顯示使用者資訊到畫面
+        document.getElementById('user-info').innerHTML = ` 
+          <p><strong>姓名：</strong>${user.displayName}</p> 
+          <p><strong>Email：</strong>${user.email}</p> 
+          <img src="${user.photoURL}" alt="使用者照片" style="width: 100px; height: 100px;"> 
+        `;
+      } catch (error) {
+        console.error("登入失敗:", error);
+        alert("登入失敗，請稍後再試！");
+      }
+    });
+  </script>
+</body>
+</html>
