@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Google 登入與註冊</title>
+  <title>Firebase Google 登入</title>
   <!-- Firebase JavaScript SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js"></script>
@@ -55,11 +55,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>Google 註冊與登入</h1>
+    <h1>Google 登入</h1>
 
-    <!-- 註冊與登入按鈕 -->
-    <a href="register.html"><button id="register-btn">註冊</button></a>
-    <a href="login.html"><button id="login-btn">登入</button></a>
+    <!-- Google 登入按鈕 -->
+    <button id="google-login-btn">Google 登入</button>
 
     <!-- 顯示使用者資訊 -->
     <div id="user-info"></div>
@@ -87,15 +86,15 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // 註冊按鈕事件
-    document.getElementById('register-btn').addEventListener('click', async () => {
+    // Google 登入按鈕事件
+    document.getElementById('google-login-btn').addEventListener('click', async () => {
       const provider = new firebase.auth.GoogleAuthProvider(); // Google 登入提供者
       try {
         // 彈出 Google 登入視窗
         const result = await auth.signInWithPopup(provider);
         const user = result.user;
 
-        // 獲取使用者資訊
+        // 使用者資訊
         const userInfo = {
           name: user.displayName,
           email: user.email,
@@ -103,46 +102,25 @@
           lastLogin: new Date().toISOString(),
         };
 
-        // 寫入新使用者資料到 Realtime Database
+        // 寫入/更新使用者資料到 Realtime Database
         const userRef = db.ref(`users/${user.uid}`);
         const snapshot = await userRef.once('value');
 
         if (snapshot.exists()) {
-          alert("此帳號已註冊，請直接登入！");
+          // 更新最後登入時間
+          await userRef.update({ lastLogin: userInfo.lastLogin });
+          alert("歡迎回來！");
         } else {
+          // 註冊新使用者
           await userRef.set(userInfo);
-          alert("註冊成功！");
-        }
-      } catch (error) {
-        console.error("註冊失敗:", error);
-        alert("註冊失敗，請稍後再試！");
-      }
-    });
-
-    // 登入按鈕事件
-    document.getElementById('login-btn').addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider(); // Google 登入提供者
-      try {
-        // 彈出 Google 登入視窗
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
-
-        // 更新最後登入時間
-        const userRef = db.ref(`users/${user.uid}`);
-        const snapshot = await userRef.once('value');
-
-        if (snapshot.exists()) {
-          await userRef.update({ lastLogin: new Date().toISOString() });
-          alert("登入成功！");
-        } else {
-          alert("未註冊的帳號，請先註冊！");
+          alert("註冊成功，歡迎！");
         }
 
         // 顯示使用者資訊到畫面
-        document.getElementById('user-info').innerHTML = ` 
-          <p><strong>姓名：</strong>${user.displayName}</p> 
-          <p><strong>Email：</strong>${user.email}</p> 
-          <img src="${user.photoURL}" alt="使用者照片" style="width: 100px; height: 100px;"> 
+        document.getElementById('user-info').innerHTML = `
+          <p><strong>姓名：</strong>${user.displayName}</p>
+          <p><strong>Email：</strong>${user.email}</p>
+          <img src="${user.photoURL}" alt="使用者照片" style="width: 100px; height: 100px;">
         `;
       } catch (error) {
         console.error("登入失敗:", error);
