@@ -44,10 +44,6 @@
     img {
       border-radius: 50%;
     }
-    #error-message {
-      margin-top: 10px;
-      color: red;
-    }
     /* 全螢幕遮罩層 */
     #overlay {
       position: fixed;
@@ -56,7 +52,7 @@
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
+      z-index: 9999; /* 確保遮罩層在最上層 */
       display: none; /* 預設隱藏 */
     }
   </style>
@@ -70,7 +66,6 @@
     <button id="google-register-btn">Google 註冊</button>
     <button id="google-login-btn">Google 登入</button>
     <div id="user-info"></div>
-    <div id="error-message"></div>
   </div>
 
   <script type="module">
@@ -100,13 +95,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       const registerBtn = document.getElementById('google-register-btn');
       const loginBtn = document.getElementById('google-login-btn');
-      const errorMessage = document.getElementById('error-message');
       const overlay = document.getElementById('overlay');
-
-      // 清除錯誤訊息
-      function clearErrorMessage() {
-        errorMessage.textContent = '';
-      }
 
       // 顯示遮罩層
       function showOverlay() {
@@ -120,7 +109,6 @@
 
       // Google 註冊按鈕
       registerBtn.addEventListener('click', async () => {
-        clearErrorMessage();
         showOverlay();  // 顯示遮罩層
         const provider = new GoogleAuthProvider();
         try {
@@ -131,9 +119,7 @@
           const userRef = ref(database, 'users/' + user.uid);
           const snapshot = await get(userRef);
 
-          if (snapshot.exists()) {
-            errorMessage.textContent = "用戶已註冊！";
-          } else {
+          if (!snapshot.exists()) {
             // 如果是新用戶，寫入資料庫
             const userInfo = {
               name: user.displayName,
@@ -144,14 +130,11 @@
             };
 
             await set(userRef, userInfo);
-            errorMessage.style.color = 'green';
-            errorMessage.textContent = "註冊成功！";
           }
 
           displayUserInfo(user);
         } catch (error) {
-          console.error("註冊失敗：", error);
-          errorMessage.textContent = "註冊失敗！請檢查錯誤。";
+          console.error("註冊/登入失敗：", error);
         } finally {
           hideOverlay();  // 隱藏遮罩層
         }
@@ -159,7 +142,6 @@
 
       // Google 登入按鈕
       loginBtn.addEventListener('click', async () => {
-        clearErrorMessage();
         showOverlay();  // 顯示遮罩層
         const provider = new GoogleAuthProvider();
         try {
@@ -170,12 +152,9 @@
           const userRef = ref(database, 'users/' + user.uid);
           await update(userRef, { lastLogin: new Date().toISOString() });
 
-          errorMessage.style.color = 'green';
-          errorMessage.textContent = "登入成功！";
           displayUserInfo(user);
         } catch (error) {
           console.error("登入失敗：", error);
-          errorMessage.textContent = "登入失敗！請檢查錯誤。";
         } finally {
           hideOverlay();  // 隱藏遮罩層
         }
