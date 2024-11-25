@@ -42,6 +42,10 @@
     img {
       border-radius: 50%;
     }
+    #error-message {
+      margin-top: 10px;
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -50,6 +54,7 @@
     <button id="google-register-btn">Google 註冊</button>
     <button id="google-login-btn">Google 登入</button>
     <div id="user-info"></div>
+    <div id="error-message"></div>
   </div>
 
   <script type="module">
@@ -68,7 +73,7 @@
       messagingSenderId: "248393751999",
       appId: "1:248393751999:web:af9d6a0d12c90fc94f550a",
       measurementId: "G-06SM1YWLZZ"
-  };
+    };
 
     // 初始化 Firebase
     const app = initializeApp(firebaseConfig);
@@ -79,9 +84,16 @@
     document.addEventListener('DOMContentLoaded', () => {
       const registerBtn = document.getElementById('google-register-btn');
       const loginBtn = document.getElementById('google-login-btn');
+      const errorMessage = document.getElementById('error-message');
+
+      // 清除錯誤訊息
+      function clearErrorMessage() {
+        errorMessage.textContent = '';
+      }
 
       // Google 註冊按鈕
       registerBtn.addEventListener('click', async () => {
+        clearErrorMessage();
         const provider = new GoogleAuthProvider();
         try {
           const result = await signInWithPopup(auth, provider);
@@ -92,7 +104,7 @@
           const snapshot = await get(userRef);
 
           if (snapshot.exists()) {
-            alert("用戶已註冊！");
+            errorMessage.textContent = "用戶已註冊！";
           } else {
             // 如果是新用戶，寫入資料庫
             const userInfo = {
@@ -104,18 +116,20 @@
             };
 
             await set(userRef, userInfo);
-            alert("註冊成功！");
+            errorMessage.style.color = 'green';
+            errorMessage.textContent = "註冊成功！";
           }
 
           displayUserInfo(user);
         } catch (error) {
           console.error("註冊失敗：", error);
-          alert("註冊失敗！請檢查錯誤。");
+          errorMessage.textContent = "註冊失敗！請檢查錯誤。";
         }
       });
 
       // Google 登入按鈕
       loginBtn.addEventListener('click', async () => {
+        clearErrorMessage();
         const provider = new GoogleAuthProvider();
         try {
           const result = await signInWithPopup(auth, provider);
@@ -125,11 +139,12 @@
           const userRef = ref(database, 'users/' + user.uid);
           await update(userRef, { lastLogin: new Date().toISOString() });
 
-          alert("登入成功！");
+          errorMessage.style.color = 'green';
+          errorMessage.textContent = "登入成功！";
           displayUserInfo(user);
         } catch (error) {
           console.error("登入失敗：", error);
-          alert("登入失敗！請檢查錯誤。");
+          errorMessage.textContent = "登入失敗！請檢查錯誤。";
         }
       });
 
