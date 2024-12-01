@@ -13,7 +13,6 @@
       height: 100vh;
       margin: 0;
       background-color: #f8f9fa;
-      overflow: hidden; /* 防止背景滾動 */
     }
     .container {
       text-align: center;
@@ -23,7 +22,6 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       max-width: 400px;
       width: 100%;
-      position: relative; /* 確保內容不會被遮擋 */
     }
     button {
       background-color: #007bff;
@@ -44,7 +42,6 @@
     img {
       border-radius: 50%;
     }
-    /* 全螢幕遮罩層 */
     #overlay {
       position: fixed;
       top: 0;
@@ -52,15 +49,13 @@
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
-      z-index: 9999; /* 確保遮罩層在最上層 */
-      display: none; /* 預設隱藏 */
+      z-index: 9999;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <!-- 遮罩層 -->
   <div id="overlay"></div>
-
   <div class="container">
     <h1>Google 註冊與登入</h1>
     <button id="google-register-btn">Google 註冊</button>
@@ -69,21 +64,20 @@
   </div>
 
   <script type="module">
-    // 引入 Firebase 模組
+    // 引入 Firebase 套件
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    // Firebase 配置
     const firebaseConfig = {
-      apiKey: "AIzaSyAA8Rf4c_XmsTE7g84UDod9awabqCw5XNo",
-      authDomain: "project-53711.firebaseapp.com",
-      databaseURL: "https://project-53711-default-rtdb.firebaseio.com",
-      projectId: "project-53711",
-      storageBucket: "project-53711.firebasestorage.app",
-      messagingSenderId: "478724342589",
-      appId: "1:478724342589:web:48f39efd11a5b7fb2bbb54",
-      measurementId: "G-WSFTJEBVMX"
+      apiKey: "AIzaSyBl-TbrC7je_-7G8hMQPUbjznK-ntVonbc",
+      authDomain: "project-4a6b7.firebaseapp.com",
+      databaseURL: "https://project-4a6b7-default-rtdb.firebaseio.com",
+      projectId: "project-4a6b7",
+      storageBucket: "project-4a6b7.appspot.com",
+      messagingSenderId: "1022658576894",
+      appId: "1:1022658576894:web:e3bfa9b40a1f38c326c0af"
     };
 
     // 初始化 Firebase
@@ -109,18 +103,17 @@
 
       // Google 註冊按鈕
       registerBtn.addEventListener('click', async () => {
-        showOverlay();  // 顯示遮罩層
+        showOverlay();
         const provider = new GoogleAuthProvider();
         try {
           const result = await signInWithPopup(auth, provider);
           const user = result.user;
 
           // 檢查用戶是否已存在
-          const userRef = ref(database, 'users/' + user.uid);
+          const userRef = ref(database, `users/${user.uid}`);
           const snapshot = await get(userRef);
 
           if (!snapshot.exists()) {
-            // 如果是新用戶，寫入資料庫
             const userInfo = {
               name: user.displayName,
               email: user.email,
@@ -128,35 +121,33 @@
               createdAt: new Date().toISOString(),
               lastLogin: new Date().toISOString(),
             };
-
             await set(userRef, userInfo);
           }
 
           displayUserInfo(user);
         } catch (error) {
-          console.error("註冊/登入失敗：", error);
+          console.error("註冊失敗：", error);
         } finally {
-          hideOverlay();  // 隱藏遮罩層
+          hideOverlay();
         }
       });
 
       // Google 登入按鈕
       loginBtn.addEventListener('click', async () => {
-        showOverlay();  // 顯示遮罩層
+        showOverlay();
         const provider = new GoogleAuthProvider();
         try {
           const result = await signInWithPopup(auth, provider);
           const user = result.user;
 
-          // 更新上次登入時間
-          const userRef = ref(database, 'users/' + user.uid);
+          const userRef = ref(database, `users/${user.uid}`);
           await update(userRef, { lastLogin: new Date().toISOString() });
 
           displayUserInfo(user);
         } catch (error) {
           console.error("登入失敗：", error);
         } finally {
-          hideOverlay();  // 隱藏遮罩層
+          hideOverlay();
         }
       });
 
