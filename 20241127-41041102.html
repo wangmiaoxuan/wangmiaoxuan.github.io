@@ -46,9 +46,6 @@
       margin-top: 20px;
       text-align: left;
     }
-    #task-system h3 {
-      margin-bottom: 10px;
-    }
     ul {
       list-style-type: none;
       padding: 0;
@@ -193,15 +190,22 @@
     // 添加任務到列表
     function addTask(name, category) {
       const taskItem = document.createElement('li');
-      taskItem.draggable = true;
 
       taskItem.innerHTML = `
         <span>${name} <span class="category">(${category})</span></span>
         <div class="task-actions">
+          <button class="complete">完成</button>
           <button class="edit">編輯</button>
           <button class="delete">刪除</button>
         </div>
       `;
+
+      // 完成按鈕
+      taskItem.querySelector('.complete').addEventListener('click', () => {
+        taskItem.classList.add('completed');
+        completedList.appendChild(taskItem);
+        taskItem.querySelector('.complete').remove();
+      });
 
       // 編輯按鈕
       taskItem.querySelector('.edit').addEventListener('click', () => {
@@ -219,34 +223,7 @@
         taskItem.remove();
       });
 
-      // 拖放功能
-      taskItem.addEventListener('dragstart', () => taskItem.classList.add('dragging'));
-      taskItem.addEventListener('dragend', () => taskItem.classList.remove('dragging'));
-
-      todoList.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const afterElement = getDragAfterElement(todoList, e.clientY);
-        if (afterElement == null) {
-          todoList.appendChild(taskItem);
-        } else {
-          todoList.insertBefore(taskItem, afterElement);
-        }
-      });
-
       todoList.appendChild(taskItem);
-    }
-
-    function getDragAfterElement(container, y) {
-      const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
-      return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-          return { offset: offset, element: child };
-        } else {
-          return closest;
-        }
-      }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
   </script>
 </body>
