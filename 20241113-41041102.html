@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Google 註冊與登入</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f8f9fa;
+    }
+    .container {
+      text-align: center;
+      background: #ffffff;
+      padding: 20px 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #user-info {
+      margin-top: 20px;
+    }
+    img {
+      border-radius: 50%;
+    }
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay"></div>
+  <div class="container">
+    <h1>Google 註冊與登入</h1>
+    <button id="google-register-btn">Google 註冊</button>
+    <button id="google-login-btn">Google 登入</button>
+    <div id="user-info"></div>
+  </div>
+
+  <script type="module">
+    // 引入 Firebase 套件
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    // Firebase 配置
+    const firebaseConfig = {
+      apiKey: "AIzaSyBl-TbrC7je_-7G8hMQPUbjznK-ntVonbc",
+      authDomain: "project-4a6b7.firebaseapp.com",
+      databaseURL: "https://project-4a6b7-default-rtdb.firebaseio.com",
+      projectId: "project-4a6b7",
+      storageBucket: "project-4a6b7.appspot.com",
+      messagingSenderId: "1022658576894",
+      appId: "1:1022658576894:web:e3bfa9b40a1f38c326c0af"
+    };
+
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+
+    // 綁定按鈕事件
+    document.addEventListener('DOMContentLoaded', () => {
+      const registerBtn = document.getElementById('google-register-btn');
+      const loginBtn = document.getElementById('google-login-btn');
+      const overlay = document.getElementById('overlay');
+
+      // Google 註冊按鈕
+      registerBtn.addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+
+          // 檢查用戶是否已存在
+          const userRef = ref(database, `users/${user.uid}`);
+          const snapshot = await get(userRef);
+
+          if (!snapshot.exists()) {
+            const userInfo = {
+              name: user.displayName,
+              email: user.email,
+              photoURL: user.photoURL,
+              createdAt: new Date().toISOString(),
+              lastLogin: new Date().toISOString(),
+            };
+            await set(userRef, userInfo);
+          }
+
+          displayUserInfo(user);
+        } catch (error) {
+          console.error("註冊失敗：", error);
+        }
+      });
+
+      // Google 登入按鈕
+      loginBtn.addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+
+          const userRef = ref(database, `users/${user.uid}`);
+          await update(userRef, { lastLogin: new Date().toISOString() });
+
+          displayUserInfo(user);
+        } catch (error) {
+          console.error("登入失敗：", error);
+        }
+      });
+
+      // 顯示用戶資訊
+      function displayUserInfo(user) {
+        document.getElementById('user-info').innerHTML = `
+          <p><strong>姓名：</strong>${user.displayName}</p>
+          <p><strong>Email：</strong>${user.email}</p>
+          <img src="${user.photoURL}" alt="Profile Picture" width="100"/>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
