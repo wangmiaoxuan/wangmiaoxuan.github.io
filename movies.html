@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電影資訊</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="20241211-41041102.html">API 介紹</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影資訊</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container mt-5">
+        <h1 class="text-center">電影資訊</h1>
+        <p class="text-center">查詢全台各大電影院資訊</p>
+
+        <!-- 搜尋欄位 -->
+        <div class="mb-4">
+            <input type="text" id="search-input" class="form-control" placeholder="輸入電影院名稱或地址進行搜尋...">
+        </div>
+
+        <!-- 資料表格 -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>事業名稱</th>
+                    <th>公司名稱</th>
+                    <th>廳數</th>
+                    <th>地址</th>
+                    <th>電話</th>
+                </tr>
+            </thead>
+            <tbody id="cinema-table"></tbody>
+        </table>
+    </div>
+
+    <!-- Script -->
+    <script>
+        const cinemaTable = document.getElementById('cinema-table');
+        const searchInput = document.getElementById('search-input');
+        let allData = [];
+
+        // 從 API 獲取數據
+        fetch('https://opendata.culture.tw/upload/dataSource/2024-08-06/10882c7a-1339-4fd8-863d-db01d78de5e6/6d67f41d6efe0bd04a40c0fbcb51a4a5.csv')
+            .then(response => response.text())
+            .then(csvData => {
+                const rows = csvData.split('\n');
+                const headers = rows[0].split(',');
+                allData = rows.slice(1).map(row => {
+                    const values = row.split(',');
+                    const record = {};
+                    headers.forEach((header, index) => {
+                        record[header.trim()] = values[index] ? values[index].trim() : '';
+                    });
+                    return record;
+                });
+                renderTable(allData);
+            })
+            .catch(error => console.error('Error:', error));
+
+        // 渲染表格
+        function renderTable(data) {
+            cinemaTable.innerHTML = '';
+            data.forEach(record => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${record['事業名稱'] || 'N/A'}</td>
+                    <td>${record['公司名稱'] || 'N/A'}</td>
+                    <td>${record['廳數'] || 'N/A'}</td>
+                    <td>${record['地址'] || 'N/A'}</td>
+                    <td>${record['電話'] || 'N/A'}</td>
+                `;
+                cinemaTable.appendChild(tr);
+            });
+        }
+
+        // 搜尋功能
+        searchInput.addEventListener('input', () => {
+            const keyword = searchInput.value.toLowerCase();
+            const filteredData = allData.filter(record =>
+                (record['事業名稱'] || '').toLowerCase().includes(keyword) ||
+                (record['地址'] || '').toLowerCase().includes(keyword)
+            );
+            renderTable(filteredData);
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
