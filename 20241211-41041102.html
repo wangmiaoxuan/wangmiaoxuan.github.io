@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API 介紹</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">  
+</head>
+<style>
+  .btn-primary {
+      background-color: #3fd37a;
+      border-radius: 6px;
+      border: 0px;
+    }
+  .btn-primary:hover {
+    background-color: #3c8f5e;
+    border-radius: 6px;
+    border: 0px;
+   }
+</style>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="20241211-41041102.html">API 介紹</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影資訊</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+  </header>
+
+  <!-- 內容區 -->
+  <main class="container mt-5">
+    <h1 class="mb-1 text-center">API 範例介紹</h1>
+    <br><br>
+    <div class="row g-4">
+      <!-- 股票資訊 -->
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">股票資訊 API</h5>
+            <p class="card-text">
+              股票資訊 API 提供台灣股票每日交易數據，包括股票代碼、成交量、收盤價等資訊。適合用於金融分析或即時股市追蹤。
+            </p>
+            <a href="stocks.html" class="btn btn-primary">查看股票資訊</a>
+          </div>
+        </div>
+      </div>
+      <!-- 氣象資訊 -->
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">電影資訊 API</h5>
+            <p class="card-text">
+              電影資訊 API 提供全台電影院位置及廳數。
+            </p>
+            <a href="movies.html" class="btn btn-primary">查看氣象資訊</a>
+          </div>
+        </div>
+      </div>
+      <!-- 空氣品質 -->
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">空氣品質 API</h5>
+            <p class="card-text">
+              空氣品質 API 提供全台各地的即時空氣品質數據（AQI），包括 PM2.5、PM10、主要污染物等，適合用於環境監測應用。
+            </p>
+            <a href="air.html" class="btn btn-primary">查看空氣品質</a>
+          </div>
+        </div>
+      </div>
+      <!-- Qrcode 生成 -->
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">記事本 API</h5>
+            <p class="card-text">
+              記事本 API 支援備忘錄功能，可用於記事工作、個人之重要事件，並透過GOOGLE帳號註冊，以標示並記錄完成或未完成事件，隨時隨地可編輯及刪除。
+            </p>
+            <a href="note.html" class="btn btn-primary">查看記事本</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

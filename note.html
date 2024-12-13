@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Google 註冊與登入</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Navbar按鈕樣式 */
+    .navbar-nav .nav-item .nav-link {
+      background-color: #252323;
+      border-radius: 0px;
+    }
+    .navbar-nav .nav-item .nav-link:hover {
+      background-color: #2c3e50;
+    }
+
+    /* Google 註冊和登入按鈕樣式 */
+    .google-btn {
+      background-color: #506780;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 100%;
+      padding: 12px;
+      border-radius: 4px;
+    }
+
+    .google-btn:hover {
+      background-color: #2c3d4f;
+    }
+
+    /* 其他樣式 */
+    .container {
+      text-align: center;
+      padding: 20px 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    #task-system {
+      margin-top: 20px;
+      text-align: left;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f1f1f1;
+      border-radius: 4px;
+    }
+    li.completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .task-actions button {
+      margin: 0 5px;
+    }
+    .task-actions .complete {
+      background-color: #28a745;
+      color: white;
+    }
+    .task-actions .complete:hover {
+      background-color: #218838;
+    }
+    .category {
+      font-size: 12px;
+      color: #6c757d;
+      margin-left: 5px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .form-group textarea {
+      height: 80px;
+    }
+    .back-button {
+      position: fixed; /* 固定定位 */
+      bottom: 20px;   /* 距離底部10px */
+      right: 20px;    /* 距離右側10px */
+      background-color: #506780;
+      color: white;
+      border: none;
+      padding: 20px 25px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .back-button:hover {
+      background-color: #2c3d4f;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="20241211-41041102.html">API 介紹</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影資訊</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+  </header>
+
+  <br><br>
+  <div class="container">
+    <h1>Google 註冊與登入</h1>
+    <br><br>
+    <button id="google-register-btn" class="google-btn">Google 註冊</button>
+    <button id="google-login-btn" class="google-btn">Google 登入</button>
+    <button id="logout-btn" style="display: none;" class="google-btn">登出</button>
+    <br>
+    <div id="user-info"></div>
+    <div id="task-system" style="display: none;">
+      <h3>任務管理系統</h3>
+      <div>
+        <h4>待辦事項</h4>
+        <ul id="todo-list"></ul>
+        <div class="form-group">
+          <input type="text" id="task-title" placeholder="標題" />
+        </div>
+        <div class="form-group">
+          <textarea id="task-content" placeholder="內容"></textarea>
+        </div>
+        <select id="task-category">
+          <option value="工作">工作</option>
+          <option value="個人">個人</option>
+        </select>
+        <button id="add-task-btn">新增任務</button>
+      </div>
+      <div>
+        <h4>完成任務</h4>
+        <ul id="completed-list"></ul>
+      </div>
+    </div>
+  </div>  
+
+  <!-- 返回按鈕 -->
+  <button class="back-button" onclick="goBack()">返回</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBl-TbrC7je_-7G8hMQPUbjznK-ntVonbc",
+      authDomain: "project-4a6b7.firebaseapp.com",
+      databaseURL: "https://project-4a6b7-default-rtdb.firebaseio.com",
+      projectId: "project-4a6b7",
+      storageBucket: "project-4a6b7.appspot.com",
+      messagingSenderId: "1022658576894",
+      appId: "1:1022658576894:web:e3bfa9b40a1f38c326c0af"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const registerBtn = document.getElementById('google-register-btn');
+    const loginBtn = document.getElementById('google-login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userInfoDiv = document.getElementById('user-info');
+    const taskSystemDiv = document.getElementById('task-system');
+    const todoList = document.getElementById('todo-list');
+    const completedList = document.getElementById('completed-list');
+    const taskTitle = document.getElementById('task-title');
+    const taskContent = document.getElementById('task-content');
+    const taskCategory = document.getElementById('task-category');
+    const addTaskBtn = document.getElementById('add-task-btn');
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        displayUserInfo(user);
+        taskSystemDiv.style.display = 'block';
+        loginBtn.style.display = 'none';
+        registerBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+      } else {
+        userInfoDiv.innerHTML = '';
+        taskSystemDiv.style.display = 'none';
+        loginBtn.style.display = 'inline-block';
+        registerBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+      }
+    });
+
+    [registerBtn, loginBtn].forEach(btn =>
+      btn.addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("登入失敗：", error);
+        }
+      })
+    );
+
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("登出失敗：", error);
+      }
+    });
+
+    function displayUserInfo(user) {
+      userInfoDiv.innerHTML = ` 
+        <p><strong>姓名：</strong>${user.displayName}</p>
+        <p><strong>Email：</strong>${user.email}</p>
+        <img src="${user.photoURL}" alt="Profile Picture" width="100"/>
+      `;
+    }
+
+    addTaskBtn.addEventListener('click', () => {
+      const title = taskTitle.value.trim();
+      const content = taskContent.value.trim();
+      const category = taskCategory.value;
+
+      if (title && content) {
+        addTask(title, content, category);
+        taskTitle.value = '';
+        taskContent.value = '';
+      }
+    });
+
+    function addTask(title, content, category) {
+      const taskItem = document.createElement('li');
+
+      taskItem.innerHTML = ` 
+        <div>
+          <strong>${title}</strong>
+          <p>${content}</p>
+          <span class="category">(${category})</span>
+        </div>
+        <div class="task-actions">
+          <button class="complete">完成</button>
+          <button class="edit">編輯</button>
+          <button class="delete">刪除</button>
+        </div>
+      `;
+
+      taskItem.querySelector('.complete').addEventListener('click', () => {
+        taskItem.classList.add('completed');
+        completedList.appendChild(taskItem);
+        taskItem.querySelector('.complete').remove();
+      });
+
+      taskItem.querySelector('.edit').addEventListener('click', () => {
+        const newTitle = prompt('編輯標題', title);
+        const newContent = prompt('編輯內容', content);
+        if (newTitle && newContent) {
+          taskItem.querySelector('strong').textContent = newTitle;
+          taskItem.querySelector('p').textContent = newContent;
+        }
+      });
+
+      taskItem.querySelector('.delete').addEventListener('click', () => {
+        taskItem.remove();
+      });
+
+      todoList.appendChild(taskItem);
+    } 
+  </script>
+  
+  <script>
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+</body>
+</html>

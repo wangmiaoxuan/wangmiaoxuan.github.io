@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>空氣品質指標</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="20241211-41041102.html">API 介紹</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影資訊</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <!-- 頁面內容 -->
+    <div class="container mt-5">
+        <h1 class="text-center">空氣品質指標 (AQI)</h1>
+        <p class="text-center">查詢全台空氣品質監測數據</p>
+
+        <!-- 搜尋欄位和排序選項 -->
+        <div class="mb-4 d-flex">
+            <input type="text" id="search-input" class="form-control w-100" placeholder="輸入測站名稱或縣市進行搜尋...">
+            <select id="sort-select" class="form-select ms-2" style="width: 150px;">
+                <option value="">選擇排序</option>
+                <option value="county">縣市筆畫排序</option>
+                <option value="aqi">AQI排序</option>
+            </select>
+        </div>
+
+        <!-- 資料表格 -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>測站名稱</th>
+                    <th>縣市</th>
+                    <th>AQI</th>
+                    <th>污染物</th>
+                    <th>狀態</th>
+                    <th>發布時間</th>
+                </tr>
+            </thead>
+            <tbody id="aqi-table"></tbody>
+        </table>
+    </div>
+
+    <!-- Script -->
+    <script>
+        let allData = []; // 保存所有空氣品質數據
+        const aqiTable = document.getElementById('aqi-table');
+        const searchInput = document.getElementById('search-input');
+        const sortSelect = document.getElementById('sort-select');
+
+        // 從 API 獲取數據
+        fetch('https://data.moenv.gov.tw/api/v2/aqx_p_432?api_key=e8dd42e6-9b8b-43f8-991e-b3dee723a52d&limit=1000&sort=ImportDate%20desc&format=JSON')
+            .then(response => response.json())
+            .then(data => {
+                allData = data.records; // 取得數據記錄
+                renderTable(allData); // 初始載入所有資料
+            })
+            .catch(error => console.error('Error:', error));
+
+        // 渲染表格
+        function renderTable(data) {
+            aqiTable.innerHTML = ''; // 清空表格內容
+            data.forEach(record => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${record.sitename}</td>
+                    <td>${record.county}</td>
+                    <td>${record.aqi || 'N/A'}</td>
+                    <td>${record.pollutant || '無'}</td>
+                    <td>${record.status}</td>
+                    <td>${record.publishtime}</td>
+                `;
+                aqiTable.appendChild(tr);
+            });
+        }
+
+        // 搜尋功能
+        searchInput.addEventListener('input', () => {
+            const keyword = searchInput.value.toLowerCase(); // 取得輸入值
+            const filteredData = allData.filter(record =>
+                record.sitename.toLowerCase().includes(keyword) ||
+                record.county.toLowerCase().includes(keyword)
+            );
+            renderTable(filteredData); // 根據搜尋結果渲染表格
+            applySorting(filteredData); // 應用選擇的排序
+        });
+
+        // 排序功能
+        sortSelect.addEventListener('change', () => {
+            const selectedOption = sortSelect.value;
+            let sortedData = [...allData];
+
+            if (selectedOption === 'county') {
+                // 縣市筆畫排序
+                sortedData.sort((a, b) => a.county.localeCompare(b.county));
+            } else if (selectedOption === 'aqi') {
+                // AQI排序
+                sortedData.sort((a, b) => (a.aqi || 0) - (b.aqi || 0));
+            }
+
+            renderTable(sortedData); // 根據排序結果重新渲染表格
+        });
+
+        // 根據搜尋結果和排序應用渲染
+        function applySorting(data) {
+            const selectedOption = sortSelect.value;
+            if (selectedOption === 'county') {
+                // 縣市筆畫排序
+                data.sort((a, b) => a.county.localeCompare(b.county));
+            } else if (selectedOption === 'aqi') {
+                // AQI排序
+                data.sort((a, b) => (a.aqi || 0) - (b.aqi || 0));
+            }
+            renderTable(data); // 渲染排序後的表格
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

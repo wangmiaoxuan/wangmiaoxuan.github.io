@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>股票資訊查詢</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      margin-bottom: 50px;
+    }
+    .search-container {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+    }
+    .table-container {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="20241211-41041102.html">API 介紹</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影資訊</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- 搜尋區域 -->
+  <div class="container mb-4">
+    <div class="search-container">
+      <h2 class="mb-3">股票資訊查詢</h2>
+      <div class="row g-2">
+        <div class="col-md-15">
+          <input type="text" id="search-input" class="form-control" placeholder="請輸入代碼或名稱">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 資料表格區域 -->
+  <div class="container">
+    <div class="table-container">
+      <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+          <tr style="text-align: center;">
+            <th>股票代碼</th>
+            <th>股票名稱</th>
+            <th>交易量</th>
+            <th>交易金額</th>
+            <th>開盤價</th>
+            <th>收盤價</th>
+            <th>最高價</th>
+            <th>最低價</th>
+            <th>漲跌</th>
+          </tr>
+        </thead>
+        <tbody id="stock-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let allData = []; // 保存所有股票資料
+    const stockTable = document.getElementById('stock-table');
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
+
+    // 載入資料
+    fetch('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL')
+      .then(response => response.json())
+      .then(data => {
+        allData = data;
+        renderTable(allData); // 初始載入顯示所有資料
+      })
+      .catch(error => console.error('資料加載失敗:', error));
+
+    // 渲染表格
+    function renderTable(data) {
+      stockTable.innerHTML = ''; // 清空表格內容
+      data.forEach(stock => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${stock.Code}</td>
+          <td>${stock.Name}</td>
+          <td>${stock.TradeVolume}</td>
+          <td>${stock.TradeValue}</td>
+          <td>${stock.OpeningPrice}</td>
+          <td>${stock.HighestPrice}</td>
+          <td>${stock.LowestPrice}</td>
+          <td>${stock.ClosingPrice}</td>
+          <td>${stock.Change}</td>
+          <td>${stock.Transaction}</td>
+        `;
+        stockTable.appendChild(tr);
+      });
+    }
+
+    // 搜尋功能
+    function searchStock() {
+      const keyword = searchInput.value.trim().toLowerCase(); // 取得輸入值
+      const filteredData = allData.filter(stock =>
+        stock.Code.toLowerCase().includes(keyword) ||
+        stock.Name.toLowerCase().includes(keyword)
+      );
+      renderTable(filteredData); // 根據搜尋結果渲染表格
+    }
+
+    // 綁定搜尋按鈕事件
+    searchButton.addEventListener('click', searchStock);
+
+    // 按下 Enter 鍵也觸發搜尋
+    searchInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        searchStock();
+      }
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
