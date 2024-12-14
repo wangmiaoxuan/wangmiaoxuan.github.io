@@ -19,7 +19,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
-                        <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影資訊</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影院資訊</a></li>
                         <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
                         <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
                     </ul>
@@ -34,9 +34,11 @@
 
         <!-- 搜尋欄位和排序選項 -->
         <div class="mb-4 d-flex">
-            <input type="text" id="search-input" class="form-control w-100" placeholder="輸入測站名稱或縣市進行搜尋...">
-            <select id="sort-select" class="form-select ms-2" style="width: 150px;">
-                <option value="">選擇排序</option>
+            <div class="col-md-8">
+                <input type="text" id="search-input" class="form-control" placeholder="輸入測站名稱或縣市進行搜尋...">
+            </div>
+            <select id="sort-select" class="form-select ms-4">
+                <option value="">選擇排序方式</option>
                 <option value="county">縣市筆畫排序</option>
                 <option value="aqi">AQI排序</option>
             </select>
@@ -66,7 +68,7 @@
         const sortSelect = document.getElementById('sort-select');
 
         // 從 API 獲取數據
-        fetch('https://data.moenv.gov.tw/api/v2/aqx_p_432?api_key=e8dd42e6-9b8b-43f8-991e-b3dee723a52d&limit=1000&sort=ImportDate%20desc&format=JSON')
+        fetch('https://data.moenv.gov.tw/api/v2/aqx_p_432?api_key=e8dd42e6-9b8b-43f8-991e-b3dee723a52d&limit=1000&sort=ImportDate desc&format=JSON')
             .then(response => response.json())
             .then(data => {
                 allData = data.records; // 取得數據記錄
@@ -107,13 +109,30 @@
             const selectedOption = sortSelect.value;
             let sortedData = [...allData];
 
-            if (selectedOption === 'county') {
-                // 縣市筆畫排序
-                sortedData.sort((a, b) => a.county.localeCompare(b.county));
-            } else if (selectedOption === 'aqi') {
-                // AQI排序
-                sortedData.sort((a, b) => (a.aqi || 0) - (b.aqi || 0));
-            }
+            // 計算單個字的筆畫數
+        function getStrokeCount(char) {
+            const strokes = {
+                '一': 1, '二': 2, '三': 3, '四': 5, '五': 4, '六': 4, '七': 2, '八': 2, '九': 2, '十': 2,
+                '台': 5, '北': 5, '新': 13, '竹': 6, '市': 5, '彰': 14, '化': 4, '南': 9, '高': 10, '雄': 12,
+                '屏': 9, '東': 8, '雲': 12, '林': 8, '嘉': 14, '義': 13, '宜': 8, '花': 7, '蓮': 13, '台': 9,
+                '中': 4, '南': 9 // 可以擴充字典
+            };
+            return strokes[char] || 20; // 未知字回傳預設筆畫數20
+        }
+
+        // 計算整個縣市名稱的總筆畫數
+        function getCountyStrokeCount(countyName) {
+            return countyName.split('').reduce((total, char) => total + getStrokeCount(char), 0);
+        }
+
+        // 修改排序邏輯
+        if (selectedOption === 'county') {
+            // 依照筆畫數排序
+            sortedData.sort((a, b) => getCountyStrokeCount(a.county) - getCountyStrokeCount(b.county));
+        } else if (selectedOption === 'aqi') {
+            // AQI排序
+            sortedData.sort((a, b) => (a.aqi || 0) - (b.aqi || 0));
+        }
 
             renderTable(sortedData); // 根據排序結果重新渲染表格
         });

@@ -12,13 +12,7 @@
     .navbar {
       margin-bottom: 50px;
     }
-    .search-container {
-      background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      padding: 20px;
-    }
-    .table-container {
+    .search-container, .table-container {
       background: #ffffff;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -36,10 +30,10 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影資訊</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
+            <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
+            <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影院資訊</a></li>
+            <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
+            <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
           </ul>
         </div>
       </div>
@@ -51,8 +45,16 @@
     <div class="search-container">
       <h2 class="mb-3">股票資訊查詢</h2>
       <div class="row g-2">
-        <div class="col-md-15">
+        <div class="col-md-8">
           <input type="text" id="search-input" class="form-control" placeholder="請輸入代碼或名稱">
+        </div>
+        <div class="col-md-4">
+          <select id="sort-select" class="form-select">
+            <option value="">選擇排序方式</option>
+            <option value="code">股票代碼</option>
+            <option value="name">股票名稱</option>
+            <option value="value">交易金額 (由大到小)</option>
+          </select>
         </div>
       </div>
     </div>
@@ -73,6 +75,7 @@
             <th>最高價</th>
             <th>最低價</th>
             <th>漲跌</th>
+            <th>成交筆數</th>
           </tr>
         </thead>
         <tbody id="stock-table"></tbody>
@@ -84,8 +87,8 @@
     let allData = []; // 保存所有股票資料
     const stockTable = document.getElementById('stock-table');
     const searchInput = document.getElementById('search-input');
-    const searchButton = document.getElementById('search-button');
-
+    const sortSelect = document.getElementById('sort-select');
+  
     // 載入資料
     fetch('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL')
       .then(response => response.json())
@@ -94,7 +97,7 @@
         renderTable(allData); // 初始載入顯示所有資料
       })
       .catch(error => console.error('資料加載失敗:', error));
-
+  
     // 渲染表格
     function renderTable(data) {
       stockTable.innerHTML = ''; // 清空表格內容
@@ -106,36 +109,51 @@
           <td>${stock.TradeVolume}</td>
           <td>${stock.TradeValue}</td>
           <td>${stock.OpeningPrice}</td>
+          <td>${stock.ClosingPrice}</td>
           <td>${stock.HighestPrice}</td>
           <td>${stock.LowestPrice}</td>
-          <td>${stock.ClosingPrice}</td>
           <td>${stock.Change}</td>
           <td>${stock.Transaction}</td>
         `;
         stockTable.appendChild(tr);
       });
     }
-
+  
     // 搜尋功能
     function searchStock() {
       const keyword = searchInput.value.trim().toLowerCase(); // 取得輸入值
-      const filteredData = allData.filter(stock =>
+      let filteredData = allData.filter(stock =>
         stock.Code.toLowerCase().includes(keyword) ||
         stock.Name.toLowerCase().includes(keyword)
       );
-      renderTable(filteredData); // 根據搜尋結果渲染表格
+      sortStock(filteredData); // 搜尋後套用排序
     }
-
-    // 綁定搜尋按鈕事件
-    searchButton.addEventListener('click', searchStock);
-
-    // 按下 Enter 鍵也觸發搜尋
-    searchInput.addEventListener('keydown', event => {
-      if (event.key === 'Enter') {
-        searchStock();
+  
+    // 排序功能
+    function sortStock(data) {
+      const sortType = sortSelect.value;
+      let sortedData = [...data];
+  
+      if (sortType === 'code') {
+        sortedData.sort((a, b) => a.Code.localeCompare(b.Code));
+      } else if (sortType === 'name') {
+        sortedData.sort((a, b) => a.Name.localeCompare(b.Name));
+      } else if (sortType === 'value') {
+        sortedData.sort((a, b) => parseFloat(b.TradeValue) - parseFloat(a.TradeValue));
       }
+  
+      renderTable(sortedData);
+    }
+  
+    // 綁定搜尋輸入框事件
+    searchInput.addEventListener('input', searchStock);
+  
+    // 監聽排序下拉選單
+    sortSelect.addEventListener('change', () => {
+      searchStock(); // 重新搜尋並排序
     });
   </script>
+  
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影資訊</title>
+    <title>電影院資訊</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -19,7 +19,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item"><a class="nav-link btn btn-dark" href="stocks.html">股票資訊</a></li>
-                        <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影資訊</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-dark" href="movies.html">電影院資訊</a></li>
                         <li class="nav-item"><a class="nav-link btn btn-dark" href="air.html">空氣品質</a></li>
                         <li class="nav-item"><a class="nav-link btn btn-dark" href="note.html">記事本</a></li>
                     </ul>
@@ -29,12 +29,21 @@
     </header>
 
     <div class="container mt-5">
-        <h1 class="text-center">電影資訊</h1>
+        <h1 class="text-center">電影院資訊</h1>
         <p class="text-center">查詢全台各大電影院資訊</p>
 
-        <!-- 搜尋欄位 -->
-        <div class="mb-4">
-            <input type="text" id="search-input" class="form-control" placeholder="輸入電影院名稱或地址進行搜尋...">
+        <!-- 搜尋和排序功能 -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <input type="text" id="search-input" class="form-control" placeholder="輸入電影院名稱或地址進行搜尋...">
+            </div>
+            <div class="col-md-4">
+                <select id="sort-select" class="form-select">
+                    <option value="">選擇排序方式</option>
+                    <option value="address">依地址筆畫排序</option>
+                    <option value="halls">依廳數排序</option>
+                </select>
+            </div>
         </div>
 
         <!-- 資料表格 -->
@@ -56,6 +65,7 @@
     <script>
         const cinemaTable = document.getElementById('cinema-table');
         const searchInput = document.getElementById('search-input');
+        const sortSelect = document.getElementById('sort-select');
         let allData = [];
 
         // 從 API 獲取數據
@@ -68,10 +78,13 @@
                     const values = row.split(',');
                     const record = {};
                     headers.forEach((header, index) => {
-                        record[header.trim()] = values[index] ? values[index].trim() : '';
+                        const value = values[index] ? values[index].trim() : '';
+                        if (value && value !== 'N/A') {
+                            record[header.trim()] = value;
+                        }
                     });
                     return record;
-                });
+                }).filter(record => Object.keys(record).length > 0);
                 renderTable(allData);
             })
             .catch(error => console.error('Error:', error));
@@ -82,11 +95,11 @@
             data.forEach(record => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${record['事業名稱'] || 'N/A'}</td>
-                    <td>${record['公司名稱'] || 'N/A'}</td>
-                    <td>${record['廳數'] || 'N/A'}</td>
-                    <td>${record['地址'] || 'N/A'}</td>
-                    <td>${record['電話'] || 'N/A'}</td>
+                    <td>${record['事業名稱'] || ''}</td>
+                    <td>${record['公司名稱'] || ''}</td>
+                    <td>${record['廳數'] || ''}</td>
+                    <td>${record['地址'] || ''}</td>
+                    <td>${record['電話'] || ''}</td>
                 `;
                 cinemaTable.appendChild(tr);
             });
@@ -100,6 +113,28 @@
                 (record['地址'] || '').toLowerCase().includes(keyword)
             );
             renderTable(filteredData);
+        });
+
+        // 排序功能
+        sortSelect.addEventListener('change', () => {
+            const sortType = sortSelect.value;
+            let sortedData = [...allData];
+
+            if (sortType === 'address') {
+                sortedData.sort((a, b) => {
+                    const addressA = a['地址'] ? a['地址'].charCodeAt(0) : Infinity;
+                    const addressB = b['地址'] ? b['地址'].charCodeAt(0) : Infinity;
+                    return addressA - addressB;
+                });
+            } else if (sortType === 'halls') {
+                sortedData.sort((a, b) => {
+                    const hallsA = parseInt(a['廳數']) || 0;
+                    const hallsB = parseInt(b['廳數']) || 0;
+                    return hallsA - hallsB;
+                });
+            }
+
+            renderTable(sortedData);
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
