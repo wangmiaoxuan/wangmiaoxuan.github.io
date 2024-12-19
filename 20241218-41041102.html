@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>待辦事項</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .todo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .todo.completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button.add {
+            background-color: #4CAF50;
+            color: white;
+        }
+        button.edit {
+            background-color: #2196F3;
+            color: white;
+        }
+        button.delete {
+            background-color: #f44336;
+            color: white;
+        }
+        button.status {
+            background-color: #FF9800;
+            color: white;
+        }
+        #completed-list, #pending-list {
+            margin-top: 20px;
+        }
+        h2 {
+            margin-top: 30px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>待辦事項</h1>
+
+        <div class="form-group">
+            <label for="task">新增任務：</label>
+            <input type="text" id="task" placeholder="輸入任務內容">
+        </div>
+        <button class="add" onclick="addTodo()">新增任務</button>
+
+        <h2>未完成：</h2>
+        <div id="pending-list"></div>
+
+        <h2>已完成：</h2>
+        <div id="completed-list"></div>
+
+        <div id="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; box-shadow:0 0 10px rgba(0,0,0,0.5); border-radius:8px;">
+            <p id="modal-message"></p>
+            <button onclick="closeModal()">確定</button>
+        </div>
+    </div>
+
+    <script>
+        let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+        function showModal(message) {
+            const modal = document.getElementById('modal');
+            const modalMessage = document.getElementById('modal-message');
+            modalMessage.textContent = message;
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        function renderTodos() {
+            const pendingList = document.getElementById('pending-list');
+            const completedList = document.getElementById('completed-list');
+            pendingList.innerHTML = '';
+            completedList.innerHTML = '';
+
+            todos.forEach((todo, index) => {
+                const todoDiv = document.createElement('div');
+                todoDiv.className = 'todo';
+                if (todo.completed) todoDiv.classList.add('completed');
+
+                const todoText = document.createElement('span');
+                todoText.textContent = todo.task;
+
+                const statusButton = document.createElement('button');
+                statusButton.textContent = todo.completed ? '標記為未完成' : '標記為完成';
+                statusButton.className = 'status';
+                statusButton.onclick = () => toggleStatus(index);
+
+                const editButton = document.createElement('button');
+                editButton.textContent = '編輯';
+                editButton.className = 'edit';
+                editButton.onclick = () => editTodo(index);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '刪除';
+                deleteButton.className = 'delete';
+                deleteButton.onclick = () => deleteTodo(index);
+
+                todoDiv.appendChild(todoText);
+                todoDiv.appendChild(statusButton);
+                todoDiv.appendChild(editButton);
+                todoDiv.appendChild(deleteButton);
+
+                if (todo.completed) {
+                    completedList.appendChild(todoDiv);
+                } else {
+                    pendingList.appendChild(todoDiv);
+                }
+            });
+        }
+
+        function addTodo() {
+            const taskInput = document.getElementById('task');
+            const task = taskInput.value.trim();
+
+            if (!task) {
+                showModal('任務內容不可為空！');
+                return;
+            }
+
+            todos.push({ task, completed: false });
+            taskInput.value = '';
+            saveTodos();
+            renderTodos();
+        }
+
+        function editTodo(index) {
+            const newTask = prompt('編輯任務內容：', todos[index].task);
+
+            if (newTask === null) {
+                return;
+            }
+
+            if (!newTask.trim()) {
+                showModal('任務內容不可為空！');
+                return;
+            }
+
+            todos[index].task = newTask.trim();
+            saveTodos();
+            renderTodos();
+        }
+
+        function deleteTodo(index) {
+            if (confirm('確定要刪除這項任務嗎？')) {
+                todos.splice(index, 1);
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        function toggleStatus(index) {
+            todos[index].completed = !todos[index].completed;
+            saveTodos();
+            renderTodos();
+        }
+
+        // 初始化渲染
+        renderTodos();
+    </script>
+</body>
+</html>
